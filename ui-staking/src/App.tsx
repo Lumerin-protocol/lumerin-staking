@@ -7,7 +7,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createWeb3Modal } from "@web3modal/wagmi/react";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: 3, retryDelay: 1000 } },
+});
 
 createWeb3Modal({
   tokens: {},
@@ -36,7 +38,14 @@ export const App = () => {
           <svg width="0" height="0">
             <title>SVG gradients</title>
             <defs>
-              <linearGradient id="cl1" gradientUnits="objectBoundingBox" x1="0" y1="0.5" x2="1" y2="0.5">
+              <linearGradient
+                id="cl1"
+                gradientUnits="objectBoundingBox"
+                x1="0"
+                y1="0.5"
+                x2="1"
+                y2="0.5"
+              >
                 <stop stopColor="#A855F7" />
                 <stop offset="100%" stopColor="#3B82F6" />
               </linearGradient>

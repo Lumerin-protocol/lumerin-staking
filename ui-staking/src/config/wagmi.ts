@@ -1,6 +1,7 @@
 import { http } from "wagmi";
 import { hardhat, type Chain, sepolia, arbitrumSepolia, arbitrum } from "wagmi/chains";
 import { defaultWagmiConfig } from "@web3modal/wagmi/react/config";
+import { injected, walletConnect } from "wagmi/connectors";
 
 const supportedChains: Record<number, Chain> = {
   [hardhat.id]: hardhat,
@@ -20,6 +21,10 @@ export const config = defaultWagmiConfig({
   transports: {
     [process.env.REACT_APP_CHAIN_ID]: http(process.env.REACT_APP_ETH_NODE_URL),
   },
+  connectors: [
+    injected(),
+    walletConnect({ projectId: process.env.REACT_APP_WALLET_CONNECT_PROJECT_ID }),
+  ],
   metadata: {
     name: "Lumerin Morpheus Staking",
     description: "Stake your LMR tokens to earn rewards in MOR",

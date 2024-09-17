@@ -1,6 +1,6 @@
 import { useAccount, useDisconnect } from "wagmi";
 import { Container } from "../../components/Container.tsx";
-import homeElement from "../../images/home-element.png";
+import homeElement from "../../images/home-element.webp";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "../../components/Button.tsx";
