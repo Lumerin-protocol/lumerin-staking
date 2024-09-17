@@ -25,6 +25,10 @@ async function main() {
     minify: true,
     treeShaking: true,
     metafile: true,
+    assetNames: "[dir]/[name]-[hash]",
+    entryNames: "[dir]/[name]-[hash]",
+    splitting: true,
+    format: "esm",
     // mainFields: ["module", "main"],
   });
 
