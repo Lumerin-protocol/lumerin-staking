@@ -3,7 +3,6 @@ import "@nomicfoundation/hardhat-verify";
 import "@nomicfoundation/hardhat-toolbox-viem";
 import "@nomicfoundation/hardhat-ignition-viem";
 import "@solarity/hardhat-gobind";
-import "./tasks/upgrade";
 import type { HardhatUserConfig } from "hardhat/config";
 
 const config: HardhatUserConfig = {

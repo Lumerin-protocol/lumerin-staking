@@ -1,18 +1,18 @@
 import * as fixtures from "../test/fixtures";
 import * as fixturesStaking from "../test/Staking/fixtures";
-import { getStakeId } from "../test/Staking/utils";
-import { DAY, HOUR, MINUTE, SECOND } from "../utils/time";
+import { HOUR, SECOND } from "../utils/time";
 import hre from "hardhat";
 
 async function main() {
-  const data = await fixtures.deploySingleBid();
+  const pubClient = await hre.viem.getPublicClient();
+  const data = await fixtures.deployMORtoken();
   const lmr = await fixturesStaking.deployLMR();
   const { staking, precision } = await fixturesStaking.deployStaking(
     lmr.address,
     data.tokenMOR.address,
   );
 
-  const block = await data.publicClient.getBlock();
+  const block = await pubClient.getBlock();
   const startDate = block.timestamp;
   const duration = 48n * BigInt(HOUR / SECOND);
   const rewardPerSecond = (115n * 10n ** 18n) / 1_000_000n;
@@ -61,13 +61,12 @@ async function main() {
   console.log(`
     MOR token       ${data.tokenMOR.address}
     LMR token       ${lmr.address}
-    Diamond         ${data.marketplace.address}
     Staking         ${staking.address}
 
 
     Owner:          ${data.owner.account.address}
-    Provider:       ${data.provider.account.address}
-    User:           ${data.user.account.address}
+    Alice:          ${alice.account.address}
+    Bob:            ${bob.account.address}
   `);
 }
 
