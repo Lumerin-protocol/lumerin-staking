@@ -48,7 +48,6 @@ export function useStake() {
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       refetchOnReconnect: false,
-      retry: false,
     },
   });
 

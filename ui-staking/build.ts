@@ -1,9 +1,9 @@
 #!/usr/bin/env ts-node
 
 import esbuild from "esbuild";
-import { copy } from "esbuild-plugin-copy";
-import config from "./esbuild.config.ts";
 import fs from "node:fs";
+import config from "./esbuild.config.ts";
+// import { copy } from "esbuild-plugin-copy";
 
 async function main() {
   const metafile = await esbuild.build({
@@ -12,24 +12,11 @@ async function main() {
       ...config.define,
       "process.env.NODE_ENV": "'production'",
     },
-    plugins: [
-      ...(config.plugins ? config.plugins : []),
-      copy({
-        resolveFrom: "out",
-        assets: {
-          from: "./public/**/*",
-          to: ".",
-        },
-      }),
-    ],
+    plugins: [...(config.plugins ? config.plugins : [])],
     minify: true,
     treeShaking: true,
     metafile: true,
-    assetNames: "[dir]/[name]-[hash]",
-    entryNames: "[dir]/[name]-[hash]",
     splitting: true,
-    format: "esm",
-    // mainFields: ["module", "main"],
   });
 
   fs.writeFileSync("dist/metafile", JSON.stringify(metafile.metafile));
