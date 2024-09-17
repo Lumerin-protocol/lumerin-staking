@@ -13,5 +13,6 @@ export default {
   plugins: [],
   loader: {
     ".png": "file",
+    ".webp": "file",
   },
 } as BuildOptions;
