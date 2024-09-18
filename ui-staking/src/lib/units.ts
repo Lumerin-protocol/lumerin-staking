@@ -17,9 +17,12 @@ export function formatLMR(num: bigint): string {
 const thousandsSeparator = " ";
 const significantDigits = 3;
 
-export function formatUnits(amount: bigint, decimals: bigint): string {
-  const decimal3 = BigInt(Math.round((Number(amount) / Number(10n ** decimals)) * 1000)) * 10n ** decimals;
-  return formatUnitsV2(decimal3, Number(decimals + 3n));
+export function formatUnits(amount: bigint, decimals: bigint | number): string {
+  const decimalsBigInt = typeof decimals === "bigint" ? decimals : BigInt(Math.floor(decimals));
+  const decimal3 =
+    BigInt(Math.round((Number(amount) / Number(10n ** decimalsBigInt)) * 1000)) *
+    10n ** decimalsBigInt;
+  return formatUnitsV2(decimal3, Number(decimalsBigInt + 3n));
 }
 
 export function formatUnitsV2(value: bigint, decimals: number) {
@@ -30,7 +33,10 @@ export function formatUnitsV2(value: bigint, decimals: number) {
 
   display = display.padStart(decimals, "0");
 
-  let [integer, fraction] = [display.slice(0, display.length - decimals), display.slice(display.length - decimals)];
+  let [integer, fraction] = [
+    display.slice(0, display.length - decimals),
+    display.slice(display.length - decimals),
+  ];
   const integerSignificantDigits = integer.length;
   if (integerSignificantDigits < significantDigits) {
     fraction = fraction.slice(0, significantDigits);
