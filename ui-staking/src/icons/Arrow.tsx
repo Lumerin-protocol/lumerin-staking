@@ -8,7 +8,7 @@ export const Arrow: React.FC<Props> = (props) => (
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 20 13"
     fill={props.fill || "#fff"}
-    // style={{ transform: `rotate(${props.angle || 0}deg)` }}
+    style={{ transform: `rotate(${props.angle || 0}deg)` }}
     {...props}
   >
     <title>Arrow</title>

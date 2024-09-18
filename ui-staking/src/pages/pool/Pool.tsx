@@ -38,7 +38,9 @@ export const Pool = () => {
     ethBalance,
   } = usePool(() => {});
 
-  const activeStakes = stakes.data?.map((stake, id) => ({ id, ...stake })).filter((stake) => stake.stakeAmount > 0n);
+  const activeStakes = stakes.data
+    ?.map((stake, id) => ({ id, ...stake }))
+    .filter((stake) => stake.stakeAmount > 0n);
 
   return (
     <>
@@ -51,7 +53,7 @@ export const Pool = () => {
                 [...Array(Number(poolsCount.data))].map((_, i) => (
                   // biome-ignore lint/suspicious/noArrayIndexKey: order of items is fixed
                   <li key={i}>
-                    <Link className={poolId === i ? "active" : ""} to={`/pool/${i}`}>
+                    <Link className={poolId === i ? "active" : ""} to={`/pools/${i}`}>
                       Pool {i}
                     </Link>
                   </li>
@@ -113,13 +115,19 @@ export const Pool = () => {
                 <Separator />
                 <ul className="info">
                   <li>
-                    {formatUnits(ethBalance.data?.value || 0n, BigInt(ethBalance.data?.decimals || 0))}{" "}
+                    {formatUnits(
+                      ethBalance.data?.value || 0n,
+                      BigInt(ethBalance.data?.decimals || 0)
+                    )}{" "}
                     {ethBalance.data?.symbol}
                   </li>
                   <li>{formatLMR(lmrBalance.data || 0n)}</li>
                   <li>{formatMOR(morBalance.data || 0n)}</li>
                   <li>
-                    <Button className="button button-small" onClick={() => navigate(`/pool/${poolId}/stake`)}>
+                    <Button
+                      className="button button-primary button-small"
+                      onClick={() => navigate(`/pools/${poolId}/stake`)}
+                    >
                       Stake
                     </Button>
                   </li>
@@ -132,7 +140,9 @@ export const Pool = () => {
                     <Spinner />
                   </div>
                 )}
-                {activeStakes?.length === 0 && <div className="stake-list-no-stakes">No stakes found</div>}
+                {activeStakes?.length === 0 && (
+                  <div className="stake-list-no-stakes">No stakes found</div>
+                )}
                 <ul className="stakes">
                   {poolData &&
                     activeStakes &&
@@ -142,7 +152,8 @@ export const Pool = () => {
                       }
                       const stakedAt = stake.stakedAt || 0n;
                       const lockRemainingSeconds = stake.lockEndsAt - timestamp;
-                      const stakeStartTime = stakedAt < poolData.startTime ? poolData.startTime : stakedAt;
+                      const stakeStartTime =
+                        stakedAt < poolData.startTime ? poolData.startTime : stakedAt;
                       const lockTotalSeconds = stake.lockEndsAt - stakeStartTime;
                       let lockPassedSeconds = timestamp - stakeStartTime;
                       if (lockPassedSeconds < 0) {
@@ -158,7 +169,9 @@ export const Pool = () => {
                           : "";
 
                       const timeLeftString =
-                        lockRemainingSeconds > 0 ? formatDuration(lockRemainingSeconds) : "Stake unlocked";
+                        lockRemainingSeconds > 0
+                          ? formatDuration(lockRemainingSeconds)
+                          : "Stake unlocked";
 
                       return (
                         <li key={stake.id} className="stake">
@@ -166,11 +179,16 @@ export const Pool = () => {
                           <ul className="unchecked">
                             <li className="amount">{formatLMR(stake.stakeAmount)}</li>
                             <li className="chart-item">
-                              <Chart progress={lockProgress} lineWidth={18} className="chart-small" />
+                              <Chart
+                                progress={lockProgress}
+                                lineWidth={18}
+                                className="chart-small"
+                              />
                               <span className="chart-small-text">{timeLeftString}</span>
                             </li>
                             <li className="reward">
-                              {formatMOR(getReward(stake, poolData, timestamp, precision.data))} earned
+                              {formatMOR(getReward(stake, poolData, timestamp, precision.data))}{" "}
+                              earned
                             </li>
                             <li className="multiplier">{rewardMultiplierString} multiplier</li>
                           </ul>
@@ -214,7 +232,10 @@ export const Pool = () => {
                               <p className="value">{formatDate(stake.lockEndsAt)}</p>
                             </li>
                             <li className="item-button">
-                              <Button className="button button-small" onClick={() => withdraw(BigInt(stake.id))}>
+                              <Button
+                                className="button button-small"
+                                onClick={() => withdraw(BigInt(stake.id))}
+                              >
                                 Withdraw rewards
                               </Button>
                             </li>
@@ -266,7 +287,7 @@ export const Pool = () => {
               onClick={() => {
                 withdrawModal.reset();
                 if (withdrawModal.isTransactionSuccess) {
-                  navigate(`/pool/${poolId}`);
+                  navigate(`/pools/${poolId}`);
                 }
               }}
             >
@@ -299,7 +320,7 @@ export const Pool = () => {
               onClick={() => {
                 unstakeModal.reset();
                 if (unstakeModal.isTransactionSuccess) {
-                  navigate(`/pool/${poolId}`);
+                  navigate(`/pools/${poolId}`);
                 }
               }}
             >

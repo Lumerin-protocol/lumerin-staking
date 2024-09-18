@@ -19,6 +19,7 @@ import {
   filterUserBalanceQuery,
 } from "../../helpers/invalidators.ts";
 import { useTxModal } from "../../hooks/useTxModal.ts";
+import { useBlockchainTime } from "../../hooks/useBlockchainTime.ts";
 
 export function usePool(onUpdate: () => void) {
   const writeContract = useWriteContract();
@@ -29,9 +30,7 @@ export function usePool(onUpdate: () => void) {
 
   const { address, chain } = useAccount();
 
-  const block = useBlock();
-  const { totalSeconds } = useStopwatch({ autoStart: true });
-  const timestamp = block.isSuccess ? block.data?.timestamp + BigInt(totalSeconds) : 0n;
+  const timestamp = useBlockchainTime();
 
   const qc = useQueryClient();
 

@@ -1,11 +1,20 @@
-type PoolDataRaw = readonly [bigint, bigint, bigint, bigint, bigint, bigint, bigint] | undefined;
+export type PoolDataRaw =
+  | readonly [bigint, bigint, bigint, bigint, bigint, bigint, bigint]
+  | undefined;
 
 export function mapPoolData(poolData: PoolDataRaw) {
   if (!poolData) {
     return undefined;
   }
-  const [rewardPerSecondScaled, lastRewardTime, accRewardPerShareScaled, totalShares, totalStaked, startTime, endTime] =
-    poolData;
+  const [
+    rewardPerSecondScaled,
+    lastRewardTime,
+    accRewardPerShareScaled,
+    totalShares,
+    totalStaked,
+    startTime,
+    endTime,
+  ] = poolData;
 
   return {
     rewardPerSecondScaled,
@@ -18,7 +27,11 @@ export function mapPoolData(poolData: PoolDataRaw) {
   };
 }
 
-export function mapPoolDataAndDerive(poolData: PoolDataRaw, timestamp: bigint, precision: bigint | undefined) {
+export function mapPoolDataAndDerive(
+  poolData: PoolDataRaw,
+  timestamp: bigint,
+  precision: bigint | undefined
+) {
   const poolDataParsed = mapPoolData(poolData);
   if (!precision || !poolDataParsed) {
     return undefined;

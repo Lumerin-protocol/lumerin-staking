@@ -1,14 +1,21 @@
-import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  Route,
+  RouterProvider,
+} from "react-router-dom";
 import { Landing } from "./pages/landing/Landing.tsx";
 import React from "react";
 import { Stake } from "./pages/stake/Stake.tsx";
+import { Pools } from "./pages/pools/Pools.tsx";
 import { Pool } from "./pages/pool/Pool.tsx";
 
 const Root = (
   <>
     <Route path="/" element={<Landing />} />
-    <Route path="/pool/:poolId" element={<Pool />} />
-    <Route path="/pool/:poolId/stake" element={<Stake />} />
+    <Route path="/pools" element={<Pools />} />
+    <Route path="/pools/:poolId" element={<Pool />} />
+    <Route path="/pools/:poolId/stake" element={<Stake />} />
   </>
 );
 

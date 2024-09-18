@@ -6,6 +6,10 @@ import { useEffect } from "react";
 import { Button } from "../../components/Button.tsx";
 import { useWeb3Modal, useWeb3ModalEvents } from "@web3modal/wagmi/react";
 import { Header } from "../../components/Header.tsx";
+import { BalanceLMR, BalanceMOR } from "../../components/Balance.tsx";
+import { useLanding } from "./useLanding.ts";
+import "./Landing.css";
+import { Arrow2 } from "../../icons/Arrow2.tsx";
 
 export const Landing = () => {
   const { isConnected } = useAccount();
@@ -16,9 +20,11 @@ export const Landing = () => {
 
   useEffect(() => {
     if (event.data.event === "CONNECT_SUCCESS") {
-      navigate("/pool/0");
+      navigate("/pools/0");
     }
   }, [event, navigate]);
+
+  const { totalPools, availableRewardsMOR, tvlLMR } = useLanding();
 
   return (
     <>
@@ -34,14 +40,36 @@ export const Landing = () => {
         <div className="cta-buttons">
           {isConnected ? (
             <>
-              <Button className="button-primary" onClick={() => navigate("/pool/0")}>
+              <Button className="button-primary" onClick={() => navigate("/pools/0")}>
                 Stake LMR
               </Button>
               <Button onClick={() => disconnect()}>Disconnect</Button>
             </>
           ) : (
-            <Button onClick={() => open({ view: "Connect" })}>Connect Wallet</Button>
+            <Button className="button-primary" onClick={() => open({ view: "Connect" })}>
+              Connect Wallet <Arrow2 />
+            </Button>
           )}
+        </div>
+        <div className="cta-stats">
+          <div className="cta-stat">
+            <p>{totalPools.isSuccess ? String(totalPools.data) : "Error"}</p>
+            <h3>Total Pools</h3>
+          </div>
+          <div className="cta-stat">
+            <p>
+              {availableRewardsMOR.isSuccess ? (
+                <BalanceMOR value={availableRewardsMOR.data} />
+              ) : (
+                "Error"
+              )}
+            </p>
+            <h3>Available Rewards</h3>
+          </div>
+          <div className="cta-stat">
+            <p>{tvlLMR.isSuccess ? <BalanceLMR value={tvlLMR.data} /> : "Error"}</p>
+            <h3>Total Value Locked</h3>
+          </div>
         </div>
       </Container>
     </>
