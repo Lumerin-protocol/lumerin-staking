@@ -20,7 +20,7 @@ export const Landing = () => {
 
   useEffect(() => {
     if (event.data.event === "CONNECT_SUCCESS") {
-      navigate("/pool/0");
+      navigate("/pools/0");
     }
   }, [event, navigate]);
 
@@ -40,7 +40,7 @@ export const Landing = () => {
         <div className="cta-buttons">
           {isConnected ? (
             <>
-              <Button className="button-primary" onClick={() => navigate("/pool/0")}>
+              <Button className="button-primary" onClick={() => navigate("/pools/0")}>
                 Stake LMR
               </Button>
               <Button onClick={() => disconnect()}>Disconnect</Button>

@@ -2,6 +2,10 @@ export const decimalETH = 18n;
 export const decimalsMOR = 18n;
 export const decimalsLMR = 8n;
 
+export function formatPercent(num: number): string {
+  return `${(num * 100).toFixed(2)} %`;
+}
+
 export function formatETH(num: bigint): string {
   return `${formatUnits(num, decimalETH)} ETH`;
 }

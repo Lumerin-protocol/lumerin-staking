@@ -177,7 +177,8 @@ header {
 .button {
   background-color: transparent;
   border-radius: var(--border-radius);
-  border: 1px solid rgba(255, 255, 255, 0.75);
+  background-color: rgba(79, 126, 145, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 10px;
   font-size: 20px;
   font-weight: 600;
@@ -185,21 +186,15 @@ header {
   width: 250px;
   color: #fff;
   cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
 }
 
 .button:disabled {
   color: rgba(255, 255, 255, 0.1);
   cursor: not-allowed;
-}
-
-.button-small {
-  min-width: 100px;
-  padding: 5px;
-  font-size: 15px;
-  height: 42px;
-  text-transform: uppercase;
-  background-color: rgba(79, 126, 145, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .button-primary {
@@ -214,9 +209,23 @@ header {
   justify-content: center;
 }
 
+.button-primary:disabled {
+  color: #080810;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 .button-primary svg {
   margin-left: 0.7em;
   fill: #080810;
+}
+
+.button-small {
+  min-width: 100px;
+  padding: 0px;
+  font-size: 18px;
+  height: 42px;
+  text-transform: uppercase;
 }
 
 .section {

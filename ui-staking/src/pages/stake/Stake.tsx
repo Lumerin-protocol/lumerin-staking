@@ -112,7 +112,7 @@ export const Stake = () => {
                   <button
                     className="button"
                     type="button"
-                    onClick={() => navigate(`/pool/${poolId}`)}
+                    onClick={() => navigate(`/pools/${poolId}`)}
                   >
                     Cancel
                   </button>
@@ -164,7 +164,7 @@ export const Stake = () => {
                   onClick={() => {
                     txModal.reset();
                     if (txModal.isTransactionSuccess) {
-                      navigate(`/pool/${poolId}`);
+                      navigate(`/pools/${poolId}`);
                     }
                   }}
                 >
