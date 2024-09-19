@@ -1,10 +1,9 @@
-import { useAccount, useBlock, usePublicClient, useReadContract, useWriteContract } from "wagmi";
+import { useAccount, usePublicClient, useReadContract, useWriteContract } from "wagmi";
 import { erc20Abi, stakingMasterChefAbi } from "../../blockchain/abi.ts";
 import { useNavigate, useParams } from "react-router-dom";
-import { useState } from "react";
-import { useStopwatch } from "react-timer-hook";
+import { useEffect, useState } from "react";
 import { mapPoolData } from "../../helpers/pool.ts";
-import { decimalsLMR, decimalsMOR } from "../../lib/units.ts";
+import { decimalsLMR } from "../../lib/units.ts";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   filterPoolQuery,
@@ -12,6 +11,10 @@ import {
   filterUserBalanceQuery,
 } from "../../helpers/invalidators.ts";
 import { useTxModal } from "../../hooks/useTxModal.ts";
+import { formatUnits } from "viem";
+import { useBlockchainTime } from "../../hooks/useBlockchainTime.ts";
+import { apy } from "../../helpers/apy.ts";
+import { useRates } from "../../hooks/useRates.ts";
 
 export function useStake() {
   // set initial state
@@ -25,11 +28,7 @@ export function useStake() {
   const [stakeAmountValidEnabled, setStakeAmountValidEnabled] = useState(false);
   const txModal = useTxModal();
 
-  const block = useBlock({
-    query: { refetchInterval: false, refetchOnMount: false, refetchOnReconnect: false },
-  });
-  const { totalSeconds, reset } = useStopwatch({ autoStart: true });
-  const timestamp = block.isSuccess ? block.data?.timestamp + BigInt(totalSeconds) : 0n;
+  const timestamp = useBlockchainTime();
 
   const qc = useQueryClient();
 
@@ -51,16 +50,12 @@ export function useStake() {
     },
   });
 
-  const decimal = useReadContract({
-    abi: erc20Abi,
-    address: process.env.REACT_APP_LMR_ADDR as `0x${string}`,
-    functionName: "decimals",
-    query: {
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-    },
-  });
+  // set lockup period slider to a second position if there are more than one lockup periods
+  useEffect(() => {
+    if (locks.data?.length && locks.data?.length > 1) {
+      setLockIndex(1);
+    }
+  }, [locks.data?.length]);
 
   const precision = useReadContract({
     abi: stakingMasterChefAbi,
@@ -98,13 +93,26 @@ export function useStake() {
     },
   });
 
+  const rates = useRates();
+
+  const lmrBalanceUsd = {
+    isLoading: lmrBalance.isLoading || rates.isLoading,
+    isSuccess: lmrBalance.isSuccess && rates.isSuccess,
+    isError: lmrBalance.isError || rates.isError,
+    error: lmrBalance.error || rates.error,
+    data:
+      lmrBalance.data &&
+      rates.data &&
+      (Number(lmrBalance.data) / Number(10n ** decimalsLMR)) * rates.data.lmr,
+  };
+
   const poolData = mapPoolData(pool.data);
 
   // perform input validations
   const { value: stakeAmountDecimals, error: stakeAmountValidErr } = validStakeAmount(
     stakeAmount,
     lmrBalance.data,
-    decimal.data,
+    Number(decimalsLMR),
     stakeAmountValidEnabled
   );
 
@@ -113,7 +121,18 @@ export function useStake() {
     poolData && timestamp > poolData?.startTime ? timestamp : poolData?.startTime;
   const lockEndsAt = effectiveStakeStartTime && effectiveStakeStartTime + lockDurationSeconds;
 
-  const apyValue = apy(poolData, timestamp, stakeAmountDecimals, precision.data, precision.data);
+  const apyValue =
+    poolData && locks.isSuccess && precision.isSuccess && rates.isSuccess
+      ? apy(
+          poolData.rewardPerSecondScaled,
+          stakeAmountDecimals,
+          poolData.totalShares,
+          locks.data?.[lockIndex].multiplierScaled,
+          precision.data,
+          rates.data?.mor,
+          rates.data?.lmr
+        )
+      : 0;
 
   const pubClient = usePublicClient();
   const writeContract = useWriteContract();
@@ -162,6 +181,13 @@ export function useStake() {
     });
   }
 
+  async function setMaxStakeAmount() {
+    if (!lmrBalance.data) {
+      return;
+    }
+    setStakeAmount(formatUnits(lmrBalance.data, Number(decimalsLMR)));
+  }
+
   return {
     txModal,
     poolId,
@@ -169,7 +195,6 @@ export function useStake() {
     apyValue,
     chain,
     locks,
-    decimal,
     pubClient,
     navigate,
     timestamp,
@@ -178,8 +203,10 @@ export function useStake() {
     setLockIndex,
     onStake,
     lmrBalance,
+    lmrBalanceUsd,
     stakeAmount,
     setStakeAmount,
+    setMaxStakeAmount,
     writeContract,
     stakeAmountDecimals,
     stakeAmountValidErr,
@@ -216,41 +243,9 @@ function validStakeAmount(
 
   const value = BigInt(n) * BigInt(10 ** decimals);
   if (value > balance) {
+    console.log({ value, balance, n, decimals });
     return { value, error: "Insufficient LMR balance" };
   }
 
   return { value, error: "" };
-}
-
-function apy(
-  poolData: ReturnType<typeof mapPoolData>,
-  timestamp: bigint,
-  stakeAmount: bigint,
-  precision: bigint | undefined,
-  yearMultiplierScaled: bigint | undefined
-) {
-  if (!poolData || !yearMultiplierScaled || !precision || !yearMultiplierScaled) {
-    return undefined;
-  }
-  if (stakeAmount === 0n) {
-    return 0;
-  }
-  const priceOfLumerinInMor =
-    0.02041 / 10 ** Number(decimalsLMR) / (21.8 / 10 ** Number(decimalsMOR));
-
-  const shares = (stakeAmount * yearMultiplierScaled) / precision;
-  const rewardDebt = (shares * poolData.accRewardPerShareScaled) / precision;
-
-  const futureTimestamp = timestamp + BigInt(365 * 24 * 60 * 60);
-  const futureRewardScaled =
-    (futureTimestamp - poolData.lastRewardTime) * poolData.rewardPerSecondScaled;
-  const futureTotalShares = poolData.totalShares + shares;
-  const futureAccRewardPerShareScaled =
-    poolData.accRewardPerShareScaled + futureRewardScaled / futureTotalShares;
-
-  const reward1yearMor = (shares * futureAccRewardPerShareScaled) / precision - rewardDebt;
-  const reward1yearLmr = BigInt(Math.floor(Number(reward1yearMor) / priceOfLumerinInMor));
-
-  const apy = Number((reward1yearLmr * 100n * 100n) / stakeAmount) / 100; // trimmed at two decimal places
-  return apy;
 }

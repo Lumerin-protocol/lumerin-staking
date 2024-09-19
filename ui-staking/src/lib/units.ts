@@ -1,4 +1,4 @@
-export const decimalETH = 18n;
+export const decimalsETH = 18n;
 export const decimalsMOR = 18n;
 export const decimalsLMR = 8n;
 
@@ -7,7 +7,7 @@ export function formatPercent(num: number): string {
 }
 
 export function formatETH(num: bigint): string {
-  return `${formatUnits(num, decimalETH)} ETH`;
+  return `${formatUnits(num, decimalsETH)} ETH`;
 }
 
 export function formatMOR(num: bigint): string {

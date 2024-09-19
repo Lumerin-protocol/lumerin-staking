@@ -4,7 +4,6 @@ import { Separator } from "../../components/Separator.tsx";
 import { Container } from "../../components/Container.tsx";
 import { usePool } from "./usePool.ts";
 import { Chart } from "../../components/Chart.tsx";
-import { formatETH, formatLMR, formatMOR, formatUnits } from "../../lib/units.ts";
 import { formatDate, formatDuration } from "../../lib/date.ts";
 import { Button } from "../../components/Button.tsx";
 import { SpoilerToogle } from "../../components/SpoilerToogle.tsx";
@@ -13,6 +12,9 @@ import { Spinner } from "../../icons/Spinner.tsx";
 import { Dialog } from "../../components/Dialog.tsx";
 import { TxProgress } from "../../components/TxProgress.tsx";
 import { getDisplayErrorMessage } from "../../helpers/error.ts";
+import { BalanceCurrency, BalanceLMR, BalanceMOR } from "../../components/Balance.tsx";
+import "./Pool.css";
+import { Arrow } from "../../icons/Arrow.tsx";
 
 export const Pool = () => {
   const {
@@ -21,7 +23,6 @@ export const Pool = () => {
     precision,
     withdraw,
     timestamp,
-    poolsCount,
     stakes,
     poolData,
     poolIsLoading,
@@ -48,48 +49,40 @@ export const Pool = () => {
       <main>
         <Container>
           <nav className="pool-nav">
-            <ul>
-              {poolsCount.isSuccess &&
-                [...Array(Number(poolsCount.data))].map((_, i) => (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: order of items is fixed
-                  <li key={i}>
-                    <Link className={poolId === i ? "active" : ""} to={`/pools/${i}`}>
-                      Pool {i}
-                    </Link>
-                  </li>
-                ))}
-            </ul>
+            <Link to="/pools" className="back-to-all-pools">
+              <Arrow angle={180} fill="#fff" />
+              Back to all pools
+            </Link>
           </nav>
-          {poolIsLoading ||
-            ((poolError || poolsCount.error) && (
-              <div className="section loading">
-                {poolIsLoading && !poolNotFound && <Spinner />}
-                {poolNotFound && <p className="error">Pool not found</p>}
-                {poolError && <p className="error">Error: {poolError.message}</p>}
-              </div>
-            ))}
+          {(poolIsLoading || poolError) && (
+            <div className="section loading">
+              {poolIsLoading && !poolNotFound && <Spinner />}
+              {poolNotFound && <p className="error">Pool not found</p>}
+              {poolError && <p className="error">Error: {poolError.message}</p>}
+            </div>
+          )}
 
           {poolData && precision.isSuccess && (
             <div className="pool">
               <section className="section pool-stats">
-                <h2 className="section-heading">Pool stats</h2>
+                <h2 className="section-heading">Pool {poolId} Stats</h2>
                 <Separator />
 
                 <dl className="info">
-                  <dt>Reward per second</dt>
-                  <dd>{formatMOR(poolData.rewardPerSecondScaled / precision.data)}</dd>
+                  <dt>Reward per day</dt>
+                  <dd>
+                    <BalanceMOR
+                      value={(poolData.rewardPerSecondScaled * 24n * 60n * 60n) / precision.data}
+                    />
+                  </dd>
 
                   <dt>Total shares</dt>
                   <dd>{poolData.totalShares.toString()}</dd>
 
                   <dt>Total staked</dt>
-                  <dd>{formatLMR(poolData.totalStaked)}</dd>
-
-                  <dt>Start</dt>
-                  <dd className="shift-left">{formatDate(poolData.startTime)}</dd>
-
-                  <dt>End</dt>
-                  <dd className="shift-left">{formatDate(poolData.endTime)}</dd>
+                  <dd>
+                    <BalanceLMR value={poolData.totalStaked} />
+                  </dd>
 
                   <dt>Duration</dt>
                   <dd>{formatDuration(poolData.endTime - poolData.startTime)}</dd>
@@ -99,15 +92,25 @@ export const Pool = () => {
                 </dl>
               </section>
               <section className="section rewards-balance">
-                <h2 className="section-heading">Pool rewards balance</h2>
+                <h2 className="section-heading">Pool rewards</h2>
                 <Separator />
                 <dl className="info">
                   <dt>Total Rewards</dt>
-                  <dd>{formatMOR(poolData.totalRewards)}</dd>
+                  <dd>
+                    <BalanceMOR value={poolData.totalRewards} />
+                  </dd>
                   <dt>Locked Rewards</dt>
-                  <dd>{formatMOR(poolData.lockedRewards)}</dd>
+                  <dd>
+                    <BalanceMOR value={poolData.lockedRewards} />
+                  </dd>
                   <dt>Unlocked Rewards</dt>
-                  <dd>{formatMOR(poolData.unlockedRewards)}</dd>
+                  <dd>
+                    <BalanceMOR value={poolData.unlockedRewards} />
+                  </dd>
+                  <dt>Start</dt>
+                  <dd className="shift-left">{formatDate(poolData.startTime)}</dd>
+                  <dt>End</dt>
+                  <dd className="shift-left">{formatDate(poolData.endTime)}</dd>
                 </dl>
               </section>
               <section className="section wallet-balance">
@@ -115,15 +118,19 @@ export const Pool = () => {
                 <Separator />
                 <ul className="info">
                   <li>
-                    {formatUnits(
-                      ethBalance.data?.value || 0n,
-                      BigInt(ethBalance.data?.decimals || 0)
-                    )}{" "}
-                    {ethBalance.data?.symbol}
+                    <BalanceCurrency
+                      value={ethBalance.data?.value || 0n}
+                      currency={ethBalance.data?.symbol || ""}
+                      decimals={ethBalance.data?.decimals || 18}
+                    />
                   </li>
-                  <li>{formatLMR(lmrBalance.data || 0n)}</li>
-                  <li>{formatMOR(morBalance.data || 0n)}</li>
                   <li>
+                    <BalanceLMR value={lmrBalance.data || 0n} />
+                  </li>
+                  <li>
+                    <BalanceMOR value={morBalance.data || 0n} />
+                  </li>
+                  <li className="button-item">
                     <Button
                       className="button button-primary button-small"
                       onClick={() => navigate(`/pools/${poolId}/stake`)}
@@ -177,7 +184,9 @@ export const Pool = () => {
                         <li key={stake.id} className="stake">
                           <SpoilerToogle />
                           <ul className="unchecked">
-                            <li className="amount">{formatLMR(stake.stakeAmount)}</li>
+                            <li className="amount">
+                              <BalanceLMR value={stake.stakeAmount} />
+                            </li>
                             <li className="chart-item">
                               <Chart
                                 progress={lockProgress}
@@ -187,7 +196,9 @@ export const Pool = () => {
                               <span className="chart-small-text">{timeLeftString}</span>
                             </li>
                             <li className="reward">
-                              {formatMOR(getReward(stake, poolData, timestamp, precision.data))}{" "}
+                              <BalanceMOR
+                                value={getReward(stake, poolData, timestamp, precision.data)}
+                              />{" "}
                               earned
                             </li>
                             <li className="multiplier">{rewardMultiplierString} multiplier</li>
@@ -195,7 +206,9 @@ export const Pool = () => {
                           <ul className="checked">
                             <li>
                               <p className="title">Amount Staked</p>
-                              <p className="value">{formatLMR(stake.stakeAmount)}</p>
+                              <p className="value">
+                                <BalanceLMR value={stake.stakeAmount} />
+                              </p>
                             </li>
                             <li>
                               <p className="title">Lockup Period</p>
@@ -220,7 +233,9 @@ export const Pool = () => {
                             <li>
                               <p className="title">Current Rewards</p>
                               <p className="value">
-                                {formatMOR(getReward(stake, poolData, timestamp, precision.data))}
+                                <BalanceMOR
+                                  value={getReward(stake, poolData, timestamp, precision.data)}
+                                />
                               </p>
                             </li>
                             <li>

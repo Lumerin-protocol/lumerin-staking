@@ -1,17 +1,8 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useStopwatch } from "react-timer-hook";
-import {
-  useAccount,
-  useBalance,
-  useBlock,
-  usePublicClient,
-  useReadContract,
-  useWriteContract,
-} from "wagmi";
+import { useAccount, useBalance, useReadContract, useWriteContract } from "wagmi";
 import { stakingMasterChefAbi } from "../../blockchain/abi.ts";
 import { erc20Abi } from "viem";
 import { mapPoolDataAndDerive } from "../../helpers/pool.ts";
-import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   filterPoolQuery,
@@ -20,6 +11,7 @@ import {
 } from "../../helpers/invalidators.ts";
 import { useTxModal } from "../../hooks/useTxModal.ts";
 import { useBlockchainTime } from "../../hooks/useBlockchainTime.ts";
+import { isErr } from "../../lib/error.ts";
 
 export function usePool(onUpdate: () => void) {
   const writeContract = useWriteContract();
@@ -34,26 +26,11 @@ export function usePool(onUpdate: () => void) {
 
   const qc = useQueryClient();
 
-  const poolsCount = useReadContract({
-    abi: stakingMasterChefAbi,
-    address: process.env.REACT_APP_STAKING_ADDR as `0x${string}`,
-    functionName: "getPoolsCount",
-    args: [],
-  });
-
-  const shouldQueryPool = poolId !== undefined && poolsCount.isSuccess && poolId < poolsCount.data;
-  const poolNotFound =
-    (poolId !== undefined && poolsCount.isSuccess && poolId >= poolsCount.data) ||
-    poolsCount.isError;
-
   const poolDataArr = useReadContract({
     abi: stakingMasterChefAbi,
     address: process.env.REACT_APP_STAKING_ADDR as `0x${string}`,
     functionName: "pools",
     args: [BigInt(poolId as number)],
-    query: {
-      enabled: shouldQueryPool,
-    },
   });
 
   const locks = useReadContract({
@@ -62,7 +39,6 @@ export function usePool(onUpdate: () => void) {
     functionName: "getLockDurations",
     args: [BigInt(poolId as number)],
     query: {
-      enabled: shouldQueryPool,
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       refetchOnReconnect: false,
@@ -75,12 +51,14 @@ export function usePool(onUpdate: () => void) {
     functionName: "getStakes",
     args: [address as `0x${string}`, BigInt(poolId as number)],
     query: {
-      enabled: address && shouldQueryPool,
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       refetchOnReconnect: false,
     },
   });
+
+  const poolNotFound =
+    stakes.isError && isErr<typeof stakingMasterChefAbi>(stakes.error, "PoolOrStakeNotExists");
 
   const ethBalance = useBalance({
     address,
@@ -203,7 +181,6 @@ export function usePool(onUpdate: () => void) {
     unstake,
     withdraw,
     timestamp,
-    poolsCount,
     stakes,
     poolData,
     poolIsLoading: poolDataArr.isLoading,

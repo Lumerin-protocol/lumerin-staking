@@ -6,12 +6,11 @@ interface Props extends React.SVGProps<SVGSVGElement> {
 export const Arrow: React.FC<Props> = (props) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 20 13"
-    fill={props.fill || "#fff"}
-    style={{ transform: `rotate(${props.angle || 0}deg)` }}
+    viewBox="0 0 18 18"
+    style={{ ...props.style, transform: `rotate(${props.angle || 0}deg)` }}
     {...props}
   >
     <title>Arrow</title>
-    <path d="m10 0 10 10-2.35 2.35L10 4.717 2.35 12.35 0 10 10 0Z" />
+    <path d="M9 0 7.414 1.586l6.277 6.289H0v2.25h13.691l-6.277 6.289L9 18l9-9-9-9Z" />
   </svg>
 );

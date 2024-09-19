@@ -10,9 +10,11 @@ import { isErr } from "../../lib/error.ts";
 import type { stakingMasterChefAbi } from "../../blockchain/abi.ts";
 import { Spinner } from "../../icons/Spinner.tsx";
 import { Dialog } from "../../components/Dialog.tsx";
-import { formatLMR } from "../../lib/units.ts";
+import { formatLMR, formatPercent } from "../../lib/units.ts";
 import { TxProgress } from "../../components/TxProgress.tsx";
 import { getDisplayErrorMessage } from "../../helpers/error.ts";
+import "./Stake.css";
+import { BalanceLMR, BalanceUSD } from "../../components/Balance.tsx";
 
 export const Stake = () => {
   const {
@@ -29,10 +31,13 @@ export const Stake = () => {
     stakeAmount,
     stakeAmountDecimals,
     setStakeAmount,
+    setMaxStakeAmount,
     stakeAmountValidErr,
     txModal,
     lockDurationSeconds,
     lockEndsAt,
+    lmrBalance,
+    lmrBalanceUsd,
   } = useStake();
 
   const isNoPoolError = isErr<typeof stakingMasterChefAbi>(locks.error, "PoolOrStakeNotExists");
@@ -44,15 +49,15 @@ export const Stake = () => {
       ? Number(locks.data[lockIndex].multiplierScaled) / Number(multiplier.data)
       : 0;
 
-  // const stakeTxURL = getTxURL(stakeTxHash, chain);
-
   return (
     <>
       <Header />
       <main>
         <ContainerNarrow>
           <section className="section add-stake">
-            <h1>New stake</h1>
+            <div className="row">
+              <h1>Stake tokens</h1>
+            </div>
             {locks.isLoading && <Spinner className="spinner-center" />}
             {(locks.isError || isNoLockPeriods || isPoolExpired) && (
               <div className="error">
@@ -64,66 +69,97 @@ export const Stake = () => {
             )}
             {locks.isSuccess && !isNoLockPeriods && !isPoolExpired && (
               <>
-                <div className="field stake-amount">
-                  <div className="field-input">
-                    <input
-                      // biome-ignore lint/a11y/noAutofocus: the main focus is on this input
-                      autoFocus
-                      id="stake-amount"
-                      type="number"
-                      value={stakeAmount}
-                      onFocus={(e) => e.currentTarget.select()}
-                      onChange={(e) =>
-                        setStakeAmount(
-                          e.target.value === "" || Number(e.target.value) > 0 ? e.target.value : "0"
-                        )
-                      }
-                      onWheel={(e) => e.currentTarget.blur()}
-                    />
-                    <label htmlFor="stake-amount">
-                      <LumerinIcon /> LMR
-                    </label>
+                <div className="row">
+                  <div className="field stake-amount">
+                    <div className="field-input">
+                      <div className="input-field-wrap">
+                        <input
+                          // biome-ignore lint/a11y/noAutofocus: the main focus is on this input
+                          autoFocus
+                          id="stake-amount"
+                          type="number"
+                          value={stakeAmount}
+                          placeholder="Amount"
+                          onFocus={(e) => e.currentTarget.select()}
+                          onChange={(e) =>
+                            setStakeAmount(
+                              e.target.value === "" || Number(e.target.value) > 0
+                                ? e.target.value
+                                : "0"
+                            )
+                          }
+                          onWheel={(e) => e.currentTarget.blur()}
+                        />
+                        <button
+                          className="button input-max"
+                          type="button"
+                          onClick={setMaxStakeAmount}
+                        >
+                          Max
+                        </button>
+                      </div>
+                      <label htmlFor="stake-amount">
+                        <LumerinIcon /> LMR
+                      </label>
+                    </div>
+                    <div className="lmr-balance">
+                      <div className="title">LMR Balance</div>
+                      <div className="value">
+                        <BalanceLMR value={lmrBalance.data || 0n} /> ≈{" "}
+                        <BalanceUSD value={lmrBalanceUsd.data || 0} />
+                      </div>
+                    </div>
+                    <div className="field-error">{stakeAmountValidErr}</div>
                   </div>
-                  <div className="field-error">{stakeAmountValidErr}</div>
                 </div>
-                <Separator />
-                <div className="field lockup-period">
-                  <label htmlFor="lockup-period">Lockup period</label>
-                  <div className="range-wrap">
-                    <RangeSelect
-                      label="Lockup period"
-                      value={lockIndex}
-                      titles={locks.data.map((l) => formatSeconds(l.durationSeconds))}
-                      onChange={setLockIndex}
-                    />
+                <div className="row">
+                  <div className="field lockup-period">
+                    <label htmlFor="lockup-period">Lockup period</label>
+                    <div className="range-wrap">
+                      <RangeSelect
+                        label="Lockup period"
+                        value={lockIndex}
+                        titles={locks.data.map((l) => formatSeconds(l.durationSeconds))}
+                        onChange={setLockIndex}
+                      />
+                    </div>
                   </div>
                 </div>
-                <dl className="field summary">
-                  <dt>APY</dt>
-                  <dd>unknown</dd>
-                  <dt>Lockup Period</dt>
-                  <dd>{formatSeconds(lockDurationSeconds)}</dd>
-                  <dt>Reward multiplier</dt>
-                  <dd>{rewardMultiplier}x</dd>
-                  <dt>Lockup ends at</dt>
-                  <dd>{lockEndsAt ? formatDate(lockEndsAt) : "unknown"}</dd>
-                </dl>
-                <div className="field buttons">
-                  <button
-                    className="button"
-                    type="button"
-                    onClick={() => navigate(`/pools/${poolId}`)}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className="button button-primary"
-                    type="submit"
-                    onClick={onStake}
-                    disabled={stakeAmount === "0" || stakeAmountValidErr !== ""}
-                  >
-                    Stake
-                  </button>
+                <div className="row">
+                  <div className="field summary">
+                    <h2>Stake Summary</h2>
+                    <dl>
+                      <dt>APY</dt>
+                      <dd>{apyValue ? formatPercent(apyValue) : "unknown"}</dd>
+                      <dt>Lockup Period</dt>
+                      <dd>{formatSeconds(lockDurationSeconds)}</dd>
+                      <dt>Reward multiplier</dt>
+                      <dd>{rewardMultiplier}x</dd>
+                      <dt>Lockup ends at</dt>
+                      <dd className="lockup-ends-value">
+                        {lockEndsAt ? formatDate(lockEndsAt) : "unknown"}
+                      </dd>
+                    </dl>
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="field buttons">
+                    <button
+                      className="button"
+                      type="button"
+                      onClick={() => navigate(`/pools/${poolId}`)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="button button-primary"
+                      type="submit"
+                      onClick={onStake}
+                      disabled={stakeAmount === "0" || stakeAmountValidErr !== ""}
+                    >
+                      Stake
+                    </button>
+                  </div>
                 </div>
               </>
             )}

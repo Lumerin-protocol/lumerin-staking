@@ -1,11 +1,11 @@
-import { Arrow } from "../icons/Arrow.tsx";
+import { Chevron } from "../icons/Chevron.tsx";
 
 export const SpoilerToogle = () => {
   return (
     <>
       <label className="toogle">
         <input type="checkbox" className="toogle-checkbox" />
-        <Arrow fill="#fff" className="toogle-arrow" />
+        <Chevron fill="#fff" className="toogle-arrow" />
       </label>
     </>
   );

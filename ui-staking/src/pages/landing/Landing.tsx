@@ -1,7 +1,7 @@
 import { useAccount, useDisconnect } from "wagmi";
 import { Container } from "../../components/Container.tsx";
 import homeElement from "../../images/home-element.webp";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "../../components/Button.tsx";
 import { useWeb3Modal, useWeb3ModalEvents } from "@web3modal/wagmi/react";
@@ -9,7 +9,7 @@ import { Header } from "../../components/Header.tsx";
 import { BalanceLMR, BalanceMOR } from "../../components/Balance.tsx";
 import { useLanding } from "./useLanding.ts";
 import "./Landing.css";
-import { Arrow2 } from "../../icons/Arrow2.tsx";
+import { Arrow } from "../../icons/Arrow.tsx";
 
 export const Landing = () => {
   const { isConnected } = useAccount();
@@ -40,14 +40,14 @@ export const Landing = () => {
         <div className="cta-buttons">
           {isConnected ? (
             <>
-              <Button className="button-primary" onClick={() => navigate("/pools/0")}>
+              <Link className="button button-primary" to="/pools">
                 Stake LMR
-              </Button>
+              </Link>
               <Button onClick={() => disconnect()}>Disconnect</Button>
             </>
           ) : (
             <Button className="button-primary" onClick={() => open({ view: "Connect" })}>
-              Connect Wallet <Arrow2 />
+              Connect Wallet <Arrow />
             </Button>
           )}
         </div>
