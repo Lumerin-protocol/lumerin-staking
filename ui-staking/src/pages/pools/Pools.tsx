@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { BalanceLMR, BalanceMOR } from "../../components/Balance.tsx";
 import "./Pools.css";
 import { MorpheusCircle } from "../../icons/MorpheusCircle.tsx";
-import { Arrow } from "../../icons/Arrow.tsx";
+import { Chevron } from "../../icons/Chevron.tsx";
 import { formatPercent } from "../../lib/units.ts";
 
 export const Pools = () => {
@@ -30,12 +30,13 @@ export const Pools = () => {
                       <MorpheusCircle width={50} height={50} />
                     </div>
                     <div className="pool-name">
-                      LMR <Arrow className="pool-direction-chevron" angle={90} width="0.7em" /> MOR
+                      LMR <Chevron className="pool-direction-chevron" angle={90} width="0.7em" />{" "}
+                      MOR
                     </div>
                     <div className="pool-action">
-                      <Link className="button button-primary" to={`/pools/${pool.id}/stake`}>
+                      {/* <Link className="button" to={`/pools/${pool.id}/stake`}>
                         Stake LMR
-                      </Link>
+                      </Link> */}
                     </div>
                     <div className="pool-action">
                       <Link className="button" to={`/pools/${pool.id}`}>

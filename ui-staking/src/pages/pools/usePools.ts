@@ -3,7 +3,7 @@ import { stakingMasterChefAbi } from "../../blockchain/abi.ts";
 import { mapPoolData, PoolDataRaw } from "../../helpers/pool.ts";
 import { getReward } from "../../helpers/reward.ts";
 import { useBlockchainTime } from "../../hooks/useBlockchainTime.ts";
-import { apy2 } from "../../helpers/apy.ts";
+import { apy } from "../../helpers/apy.ts";
 import { useRates } from "../../hooks/useRates.ts";
 
 interface PoolData {
@@ -104,8 +104,9 @@ export function usePools() {
               0n
             ),
             apy: rates.isSuccess
-              ? apy2(
+              ? apy(
                   pool.rewardPerSecondScaled,
+                  pool.totalShares,
                   pool.totalShares,
                   precision.data!,
                   precision.data!,

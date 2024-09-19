@@ -17,6 +17,10 @@ export const RangeSelect = (props: RangeSelect) => {
       onChange={(v) => props.onChange(v[0])}
       renderTrack={(p) => (
         <div {...p.props} className="range-track">
+          <div
+            className="range-track-fill"
+            style={{ width: `${props.value * (100 / (props.titles.length - 1))}%` }}
+          />
           {p.children}
         </div>
       )}

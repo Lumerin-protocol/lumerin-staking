@@ -1,0 +1,20 @@
+.back-to-all-pools {
+  font-size: 13px;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.back-to-all-pools svg {
+  width: 0.8em;
+  height: 0.8em;
+  margin-right: 0.4em;
+}
+
+ul.info .button-item {
+  grid-row: auto / span 2;
+  align-self: end;
+}
