@@ -23,6 +23,13 @@ export default {
         to: "./images/",
       },
     }),
+    copy({
+      resolveFrom: "out",
+      assets: {
+        from: "./src/.well-known/**/*",
+        to: "./.well-known/",
+      },
+    }),
   ],
   assetNames: "/[dir]/[name]-[hash]",
   chunkNames: "[ext]/[name]-[hash]",
