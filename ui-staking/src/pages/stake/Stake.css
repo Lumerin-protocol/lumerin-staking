@@ -1,13 +1,13 @@
 .row {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 15px 65px;
+  padding: 30px 65px;
 }
 
 .add-stake {
   display: flex;
   flex-direction: column;
   padding: 0px 0px;
-  margin: 90px 0 0;
+  margin: 45px 0 0;
 }
 
 .spinner-center {
@@ -17,11 +17,6 @@
 .add-stake h1 {
   font-size: 24px;
   font-weight: 600;
-  padding: 15px 0;
-}
-
-.field {
-  margin: 20px 0;
 }
 
 .field .error {
@@ -152,6 +147,16 @@ input::-webkit-inner-spin-button {
   border-radius: 50%;
 }
 
+/* Animation */
+.range-thumb {
+  transition: transform ease 150ms;
+}
+
+.range-track-fill {
+  transition: width ease 150ms;
+}
+/* Animation end */
+
 .summary h2 {
   font-size: 18px;
   font-weight: 600;
@@ -159,9 +164,9 @@ input::-webkit-inner-spin-button {
 }
 
 .summary dl {
-  padding: 30px 0;
+  padding: 30px 0 15px;
   display: grid;
-  grid-template-columns: 20% 20% 20% 40%;
+  grid-template-columns: repeat(4, 1fr);
   grid-template-rows: auto auto;
   grid-auto-flow: column;
 }
@@ -178,6 +183,10 @@ input::-webkit-inner-spin-button {
   font-size: 24px;
   font-weight: 600;
   justify-self: center;
+}
+
+.summary .value.datetime .year {
+  font-size: 1em;
 }
 
 .buttons {
@@ -224,6 +233,62 @@ input::-webkit-inner-spin-button {
   font-size: 1em;
 }
 
-.lockup-ends-value {
-  min-width: 230px;
+@media (max-width: 768px) {
+  .stake-amount label {
+    display: none;
+  }
+
+  .add-stake .summary dl {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto auto;
+    grid-auto-flow: column;
+    padding: 20px 0 0 0;
+    margin-left: -30px;
+    margin-right: -30px;
+  }
+
+  .summary dd {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .row {
+    padding: 30px 30px;
+  }
+  .add-stake .buttons {
+    gap: 20px;
+  }
+  .add-stake .buttons .button {
+    flex-grow: 1;
+  }
+
+  .stake-amount input {
+    width: 100%;
+    padding-left: 15px;
+    padding-right: 130px;
+  }
+
+  .stake-amount label {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0 15px 0 5px;
+  }
+
+  .range-mark-first .range-mark-label {
+    transform: translateX(-15%);
+  }
+
+  .range-mark-last .range-mark-label {
+    transform: translateX(-85%);
+  }
+
+  .input-max {
+    width: unset;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
 }

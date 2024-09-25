@@ -2,8 +2,31 @@ export const decimalsETH = 18n;
 export const decimalsMOR = 18n;
 export const decimalsLMR = 8n;
 
-export function formatPercent(num: number): string {
-  return `${(num * 100).toFixed(2)} %`;
+function getSeparators() {
+  const data = new Intl.NumberFormat().formatToParts(1000.1);
+  let thousand = "",
+    decimal = ".";
+  for (const part of data) {
+    if (part.type === "group") {
+      thousand = part.value;
+    } else if (part.type === "decimal") {
+      decimal = part.value;
+    }
+  }
+  return { thousand, decimal };
+}
+
+const separators = getSeparators();
+
+export function formatPercent(fraction: number): string {
+  return `${formatUnits(BigInt(Math.round(fraction * 10000)), 2, true)}%`;
+}
+
+export function formatAPY(fraction: number): string {
+  if (fraction > 100) {
+    return `> ${formatAPY(100)}`;
+  }
+  return formatPercent(fraction);
 }
 
 export function formatETH(num: bigint): string {
@@ -18,18 +41,57 @@ export function formatLMR(num: bigint): string {
   return `${formatUnits(num, decimalsLMR)} LMR`;
 }
 
-const thousandsSeparator = " ";
-const significantDigits = 3;
-
-export function formatUnits(amount: bigint, decimals: bigint | number): string {
-  const decimalsBigInt = typeof decimals === "bigint" ? decimals : BigInt(Math.floor(decimals));
-  const decimal3 =
-    BigInt(Math.round((Number(amount) / Number(10n ** decimalsBigInt)) * 1000)) *
-    10n ** decimalsBigInt;
-  return formatUnitsV2(decimal3, Number(decimalsBigInt + 3n));
+export function formatIntStr(integer: string | bigint) {
+  let res = typeof integer === "string" ? integer : integer.toString();
+  for (let i = res.length - 3; i > 0; i -= 3) {
+    res = `${res.slice(0, i)}${separators.thousand}${res.slice(i)}`;
+  }
+  return res;
 }
 
-export function formatUnitsV2(value: bigint, decimals: number) {
+export function formatInt(num: bigint): string {
+  const { value, unit } = formatIntParts(num);
+  return `${value}${unit ? ` ${unit}` : ""}`;
+}
+
+export function formatIntParts(num: bigint): { value: string; unit: string; multiplier: bigint } {
+  const numStr = num.toString();
+  const numLength = numStr.length;
+  if (numLength < 4) {
+    return { value: numStr, unit: "", multiplier: 1n };
+  }
+  if (numLength < 7) {
+    return { value: formatUnits(num, 3, true), unit: "k", multiplier: 1000n };
+  }
+  return { value: formatUnits(num, 6, true), unit: "M", multiplier: 1000000n };
+}
+
+const significantDigits = 3;
+const decimalDigits = 2n;
+
+export function formatUnits(
+  amount: bigint,
+  decimals: bigint | number,
+  trimDecimalZeros = false
+): string {
+  const decimalsBigInt = typeof decimals === "bigint" ? decimals : BigInt(Math.floor(decimals));
+  if (amount === 0n) {
+    return "0";
+  }
+  const minAmount = 1n * 10n ** (decimalsBigInt - decimalDigits);
+
+  if (amount > 0n && amount < minAmount) {
+    return "< 0.01";
+  }
+  const amountRounded =
+    BigInt(
+      Math.round((Number(amount) / Number(10n ** decimalsBigInt)) * Number(10n ** decimalDigits))
+    ) *
+    10n ** (decimalsBigInt - decimalDigits);
+  return formatUnitsV2(amountRounded, Number(decimalsBigInt), trimDecimalZeros);
+}
+
+export function formatUnitsV2(value: bigint, decimals: number, trimDecimalZeros = false): string {
   let display = value.toString();
 
   const negative = display.startsWith("-");
@@ -41,9 +103,10 @@ export function formatUnitsV2(value: bigint, decimals: number) {
     display.slice(0, display.length - decimals),
     display.slice(display.length - decimals),
   ];
+
   const integerSignificantDigits = integer.length;
   if (integerSignificantDigits < significantDigits) {
-    fraction = fraction.slice(0, significantDigits);
+    fraction = fraction.slice(0, Number(decimalDigits));
   } else {
     const rounded = BigInt(Math.round(Number(value) / 10 ** decimals)) * 10n ** BigInt(decimals);
     if (rounded !== value) {
@@ -51,14 +114,16 @@ export function formatUnitsV2(value: bigint, decimals: number) {
     }
     fraction = "";
   }
-  // hide fraction if it's all zeros
-  if (integer === "" && fraction === "000") {
-    fraction = "";
+
+  if (trimDecimalZeros) {
+    fraction = fraction.replace(/(0+)$/, "");
   }
-  // fraction = fraction.replace(/(0+)$/, '')
+
   // split the integer part into groups of 3 digits
   for (let i = integer.length - 3; i > 0; i -= 3) {
-    integer = `${integer.slice(0, i)}${thousandsSeparator}${integer.slice(i)}`;
+    integer = `${integer.slice(0, i)}${separators.thousand}${integer.slice(i)}`;
   }
-  return `${negative ? "-" : ""}${integer || "0"}${fraction ? `.${fraction}` : ""}`;
+  return `${negative ? "-" : ""}${integer || "0"}${
+    fraction ? `${separators.decimal}${fraction}` : ""
+  }`;
 }

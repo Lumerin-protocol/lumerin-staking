@@ -11,6 +11,15 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 3, retryDelay: 1000 } },
 });
 
+interface Serializable {
+  toJSON(): string;
+}
+
+// Safely extend BigInt.prototype with a toJSON method, converting to 'unknown' first
+(BigInt.prototype as unknown as Serializable).toJSON = function (): string {
+  return this.toString();
+};
+
 createWeb3Modal({
   tokens: {},
   wagmiConfig: config,

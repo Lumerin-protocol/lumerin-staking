@@ -12,9 +12,16 @@ import { Spinner } from "../../icons/Spinner.tsx";
 import { Dialog } from "../../components/Dialog.tsx";
 import { TxProgress } from "../../components/TxProgress.tsx";
 import { getDisplayErrorMessage } from "../../helpers/error.ts";
-import { BalanceCurrency, BalanceLMR, BalanceMOR } from "../../components/Balance.tsx";
+import {
+  BalanceCurrency,
+  BalanceLMR,
+  BalanceMOR,
+  BalanceValue,
+  DateTime,
+} from "../../components/Balance.tsx";
 import "./Pool.css";
 import { Arrow } from "../../icons/Arrow.tsx";
+import { formatInt } from "../../lib/units.ts";
 
 export const Pool = () => {
   const {
@@ -65,7 +72,9 @@ export const Pool = () => {
           {poolData && precision.isSuccess && (
             <div className="pool">
               <section className="section pool-stats">
-                <h2 className="section-heading">Pool {poolId} Stats</h2>
+                <h2 className="section-heading">
+                  Pool {poolId} Stats {poolData.isPrestaking && "- PRESTAKING"}
+                </h2>
                 <Separator />
 
                 <dl className="info">
@@ -77,7 +86,9 @@ export const Pool = () => {
                   </dd>
 
                   <dt>Total shares</dt>
-                  <dd>{poolData.totalShares.toString()}</dd>
+                  <dd>
+                    <BalanceValue value={poolData.totalShares} />
+                  </dd>
 
                   <dt>Total staked</dt>
                   <dd>
@@ -85,7 +96,9 @@ export const Pool = () => {
                   </dd>
 
                   <dt>Duration</dt>
-                  <dd>{formatDuration(poolData.endTime - poolData.startTime)}</dd>
+                  <dd>
+                    {formatDuration(poolData.endTime - poolData.startTime, { verbose: true })}
+                  </dd>
 
                   <dt>Lockup periods</dt>
                   <dd>{locks.data?.map((l) => formatDuration(l.durationSeconds)).join(", ")}</dd>
@@ -108,9 +121,13 @@ export const Pool = () => {
                     <BalanceMOR value={poolData.unlockedRewards} />
                   </dd>
                   <dt>Start</dt>
-                  <dd className="shift-left">{formatDate(poolData.startTime)}</dd>
+                  <dd className="shift-left">
+                    <DateTime epochSeconds={poolData.startTime} />
+                  </dd>
                   <dt>End</dt>
-                  <dd className="shift-left">{formatDate(poolData.endTime)}</dd>
+                  <dd className="shift-left">
+                    <DateTime epochSeconds={poolData.endTime} />
+                  </dd>
                 </dl>
               </section>
               <section className="section wallet-balance">
@@ -201,7 +218,9 @@ export const Pool = () => {
                               />{" "}
                               earned
                             </li>
-                            <li className="multiplier">{rewardMultiplierString} multiplier</li>
+                            <li className="multiplier">
+                              <span className="number">{rewardMultiplierString}</span> multiplier
+                            </li>
                           </ul>
                           <ul className="checked">
                             <li>
@@ -212,7 +231,9 @@ export const Pool = () => {
                             </li>
                             <li>
                               <p className="title">Lockup Period</p>
-                              <p className="value">{formatDuration(lockTotalSeconds)}</p>
+                              <p className="value">
+                                {formatDuration(lockTotalSeconds, { verbose: true })}
+                              </p>
                             </li>
                             <li>
                               <p className="title">Time Left</p>
@@ -240,11 +261,15 @@ export const Pool = () => {
                             </li>
                             <li>
                               <p className="title">Share Amount</p>
-                              <p className="value">{stake.shareAmount.toString()}</p>
+                              <p className="value">
+                                <BalanceValue value={stake.shareAmount} />
+                              </p>
                             </li>
                             <li>
                               <p className="title">Unlock Date</p>
-                              <p className="value">{formatDate(stake.lockEndsAt)}</p>
+                              <p className="value">
+                                <DateTime epochSeconds={stake.lockEndsAt} />
+                              </p>
                             </li>
                             <li className="item-button">
                               <Button

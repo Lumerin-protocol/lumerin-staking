@@ -28,6 +28,19 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.pool-icon {
+  display: flex;
+}
+
+.pool-icon svg {
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pool-icon .to {
+  margin-left: -10px;
+}
+
 .pool-item-title div {
   flex-basis: 0;
   flex-grow: 1;
@@ -42,7 +55,7 @@
 
 .pool-item-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   grid-template-rows: auto auto;
   grid-auto-flow: column;
   padding: 40px 35px 30px;
@@ -57,6 +70,8 @@
 .pool-item-stats dd {
   font-size: 36px;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .pool-direction-chevron {
@@ -74,14 +89,22 @@
     padding: 25px 25px;
     grid-template-rows: repeat(2, 1fr);
     grid-template-columns: repeat(2, 1fr);
-    grid-auto-flow: column;
-    row-gap: 15px;
+    grid-auto-flow: row;
+    row-gap: 25px;
+  }
+  .pool-empty {
+    display: none;
+  }
+
+  .pool-action {
+    grid-row: 2;
+    grid-column: 1 / 3;
   }
 
   .pool-item-stats {
     padding: 10px 25px 25px;
     grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(4, auto);
+    grid-template-rows: repeat(6, auto);
     grid-auto-flow: column;
   }
 
@@ -90,7 +113,7 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 480px) {
   .pool-item-title .pool-name {
     font-size: 24px;
   }
