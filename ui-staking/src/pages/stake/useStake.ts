@@ -8,13 +8,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   filterPoolQuery,
   filterStakeQuery,
-  filterUserBalanceQuery,
+  filterUserLMRBalanceQuery,
 } from "../../helpers/invalidators.ts";
 import { useTxModal } from "../../hooks/useTxModal.ts";
 import { formatUnits } from "viem";
 import { useBlockchainTime } from "../../hooks/useBlockchainTime.ts";
 import { apy } from "../../helpers/apy.ts";
 import { useRates } from "../../hooks/useRates.ts";
+import { parseDecimal } from "../../lib/decimal.ts";
 
 export function useStake() {
   // set initial state
@@ -174,7 +175,7 @@ export function useStake() {
           refetchType: "all",
         });
         await qc.invalidateQueries({
-          predicate: filterUserBalanceQuery(address),
+          predicate: filterUserLMRBalanceQuery(address),
           refetchType: "all",
         });
       },
@@ -223,29 +224,22 @@ function validStakeAmount(
   enabled: boolean
 ): { value: bigint; error: string | null } {
   if (!enabled) {
-    return { value: BigInt(0), error: "" };
+    return { value: 0n, error: "" };
   }
   if (amount === "") {
-    return { value: BigInt(0), error: "Enter stake amount" };
+    return { value: 0n, error: "Enter stake amount" };
   }
-  const n = Number.parseFloat(amount);
-  if (Number.isNaN(n) || !Number.isFinite(n)) {
-    return { value: BigInt(0), error: "Stake amount must be a number" };
+  if (!decimals) {
+    return { value: 0n, error: "" };
   }
+  try {
+    const value = parseDecimal(amount, decimals);
+    if (balance && value > balance) {
+      return { value, error: "Insufficient LMR balance" };
+    }
 
-  if (n <= 0) {
-    return { value: BigInt(0), error: "Stake amount must be larger than 0" };
+    return { value, error: "" };
+  } catch (e) {
+    return { value: 0n, error: (e as Error).message };
   }
-
-  if (balance === undefined || decimals === undefined) {
-    return { value: BigInt(n), error: "" };
-  }
-
-  const value = BigInt(n) * BigInt(10 ** decimals);
-  if (value > balance) {
-    console.log({ value, balance, n, decimals });
-    return { value, error: "Insufficient LMR balance" };
-  }
-
-  return { value, error: "" };
 }

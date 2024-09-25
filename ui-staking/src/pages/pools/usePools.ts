@@ -121,7 +121,7 @@ export function usePools() {
     },
   });
 
-  return { totalPools, poolsData };
+  return { totalPools, poolsData, timestamp };
 }
 
 function createArray<T>(length: number, cb: (i: number) => T): T[] {

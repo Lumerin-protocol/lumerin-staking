@@ -7,7 +7,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   filterPoolQuery,
   filterStakeQuery,
-  filterUserBalanceQuery,
+  filterUserETHBalanceQuery,
+  filterUserLMRBalanceQuery,
+  filterUserMORBalanceQuery,
 } from "../../helpers/invalidators.ts";
 import { useTxModal } from "../../hooks/useTxModal.ts";
 import { useBlockchainTime } from "../../hooks/useBlockchainTime.ts";
@@ -130,10 +132,19 @@ export function usePool(onUpdate: () => void) {
         });
         if (address) {
           await qc.invalidateQueries({
-            predicate: filterUserBalanceQuery(address),
+            predicate: filterUserLMRBalanceQuery(address),
+            refetchType: "all",
+          });
+          await qc.invalidateQueries({
+            predicate: filterUserMORBalanceQuery(address),
+            refetchType: "all",
+          });
+          await qc.invalidateQueries({
+            predicate: filterUserETHBalanceQuery(address),
             refetchType: "all",
           });
         }
+        writeContract.reset();
         onUpdate();
       },
     });
@@ -164,7 +175,11 @@ export function usePool(onUpdate: () => void) {
         });
         if (address) {
           await qc.invalidateQueries({
-            predicate: filterUserBalanceQuery(address),
+            predicate: filterUserMORBalanceQuery(address),
+            refetchType: "all",
+          });
+          await qc.invalidateQueries({
+            predicate: filterUserETHBalanceQuery(address),
             refetchType: "all",
           });
         }

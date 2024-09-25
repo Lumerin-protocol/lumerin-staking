@@ -1,20 +1,19 @@
 import { ContainerNarrow } from "../../components/Container.tsx";
 import { Header } from "../../components/Header.tsx";
-import { Separator } from "../../components/Separator.tsx";
 import { LumerinIcon } from "../../icons/LumerinIcon.tsx";
 import prettyMilliseconds from "pretty-ms";
 import { RangeSelect } from "../../components/RangeSelect.tsx";
 import { useStake } from "./useStake.ts";
-import { formatDate, formatDuration } from "../../lib/date.ts";
+import { formatDuration } from "../../lib/date.ts";
 import { isErr } from "../../lib/error.ts";
 import type { stakingMasterChefAbi } from "../../blockchain/abi.ts";
 import { Spinner } from "../../icons/Spinner.tsx";
 import { Dialog } from "../../components/Dialog.tsx";
-import { formatLMR, formatPercent } from "../../lib/units.ts";
+import { formatAPY, formatLMR } from "../../lib/units.ts";
 import { TxProgress } from "../../components/TxProgress.tsx";
 import { getDisplayErrorMessage } from "../../helpers/error.ts";
 import "./Stake.css";
-import { BalanceLMR, BalanceUSD } from "../../components/Balance.tsx";
+import { BalanceLMR, BalanceUSD, DateTime } from "../../components/Balance.tsx";
 
 export const Stake = () => {
   const {
@@ -130,14 +129,14 @@ export const Stake = () => {
                     <h2>Stake Summary</h2>
                     <dl>
                       <dt>APY</dt>
-                      <dd>{apyValue ? formatPercent(apyValue) : "unknown"}</dd>
+                      <dd>{apyValue ? formatAPY(apyValue) : "unknown"}</dd>
                       <dt>Lockup Period</dt>
                       <dd>{formatSeconds(lockDurationSeconds)}</dd>
                       <dt>Reward multiplier</dt>
                       <dd>{rewardMultiplier}x</dd>
                       <dt>Lockup ends at</dt>
                       <dd className="lockup-ends-value">
-                        {lockEndsAt ? formatDate(lockEndsAt) : "unknown"}
+                        {lockEndsAt ? <DateTime epochSeconds={lockEndsAt} /> : "unknown"}
                       </dd>
                     </dl>
                   </div>
@@ -170,7 +169,7 @@ export const Stake = () => {
                 <h2>Staking transaction</h2>
                 <p>
                   Staking {formatLMR(stakeAmountDecimals)} with lock period of{" "}
-                  {formatDuration(lockDurationSeconds)}.
+                  {formatDuration(lockDurationSeconds, { verbose: true })}.
                 </p>
                 <ul className="tx-stages">
                   <li>

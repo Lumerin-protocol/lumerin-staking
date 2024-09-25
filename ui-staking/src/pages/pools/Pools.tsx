@@ -7,10 +7,12 @@ import { BalanceLMR, BalanceMOR } from "../../components/Balance.tsx";
 import "./Pools.css";
 import { MorpheusCircle } from "../../icons/MorpheusCircle.tsx";
 import { Chevron } from "../../icons/Chevron.tsx";
-import { formatPercent } from "../../lib/units.ts";
+import { formatAPY } from "../../lib/units.ts";
+import { LumerinCircle } from "../../icons/LumerinCircle.tsx";
+import { formatDuration } from "../../lib/date.ts";
 
 export const Pools = () => {
-  const { poolsData } = usePools();
+  const { poolsData, timestamp } = usePools();
 
   return (
     <>
@@ -24,16 +26,17 @@ export const Pools = () => {
           {poolsData.isSuccess && (
             <ul className="pool-list">
               {poolsData.data.map((pool) => (
-                <li className="pool-item">
+                <li className="pool-item" key={pool.id}>
                   <div className="pool-item-title">
                     <div className="pool-icon">
-                      <MorpheusCircle width={50} height={50} />
+                      <LumerinCircle width={50} height={50} className="from" />
+                      <MorpheusCircle width={50} height={50} className="to" />
                     </div>
                     <div className="pool-name">
                       LMR <Chevron className="pool-direction-chevron" angle={90} width="0.7em" />{" "}
                       MOR
                     </div>
-                    <div className="pool-action">
+                    <div className="pool-empty">
                       {/* <Link className="button" to={`/pools/${pool.id}/stake`}>
                         Stake LMR
                       </Link> */}
@@ -46,7 +49,7 @@ export const Pools = () => {
                   </div>
                   <dl className="pool-item-stats">
                     <dt>Current APY</dt>
-                    <dd>{formatPercent(pool.apy)}</dd>
+                    <dd>{formatAPY(pool.apy)}</dd>
                     <dt>Total Value Locked</dt>
                     <dd>
                       <BalanceLMR value={pool.pool.totalStaked} />
@@ -59,6 +62,29 @@ export const Pools = () => {
                     <dd>
                       <BalanceMOR value={pool.claimable} />
                     </dd>
+                    {(console.log({ startTime: pool.pool.startTime, timestamp }), null)}
+                    {(console.log(">>>>", pool.pool.startTime > timestamp), null)}
+                    {pool.pool.startTime > timestamp && (
+                      <>
+                        <dt>Starts in</dt>
+                        <dd>
+                          {formatDuration(pool.pool.startTime - timestamp, { compact: true })}
+                        </dd>
+                      </>
+                    )}
+                    {pool.pool.startTime < timestamp && pool.pool.endTime > timestamp && (
+                      <>
+                        <dt>Ends in</dt>
+                        <dd>{formatDuration(pool.pool.endTime - timestamp, { compact: true })}</dd>
+                      </>
+                    )}
+                    {pool.pool.endTime < timestamp && (
+                      <>
+                        <dt>Ends in</dt>
+                        <dd>Pool ended</dd>
+                      </>
+                    )}
+                    {}
                   </dl>
                 </li>
               ))}

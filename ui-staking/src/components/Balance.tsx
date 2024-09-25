@@ -1,5 +1,12 @@
 import React from "react";
-import { decimalsETH, decimalsLMR, decimalsMOR, formatUnits } from "../lib/units.ts";
+import {
+  decimalsETH,
+  decimalsLMR,
+  decimalsMOR,
+  formatIntParts,
+  formatIntStr,
+  formatUnits,
+} from "../lib/units.ts";
 import "./Balance.css";
 
 export const BalanceCurrency = (props: {
@@ -32,6 +39,38 @@ export const BalanceUSD = (props: { value: number }) => {
     <span className="balance fiat-balance" title={`$${props.value}`}>
       <span className="currency">$</span>
       {props.value.toFixed(2)}
+    </span>
+  );
+};
+
+export const BalanceValue = (props: { value: bigint }) => {
+  const { value, unit } = formatIntParts(props.value);
+  return (
+    <span className="balance token-balance" title={formatIntStr(props.value)}>
+      {value} <span className="currency">{unit}</span>
+    </span>
+  );
+};
+
+export const DateTime = (props: { epochSeconds: bigint }) => {
+  const date = new Date(Number(props.epochSeconds) * 1000);
+  const dateFmt = new Intl.DateTimeFormat("en", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  const dateStrFull = date.toLocaleString("en");
+
+  const dateParts = dateFmt.formatToParts(date);
+
+  return (
+    <span className="value datetime" title={dateStrFull}>
+      {dateParts.map((part, i) => (
+        <span key={i} className={part.type}>
+          {part.value}
+        </span>
+      ))}
     </span>
   );
 };

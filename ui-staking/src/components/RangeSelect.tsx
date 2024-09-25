@@ -24,11 +24,18 @@ export const RangeSelect = (props: RangeSelect) => {
           {p.children}
         </div>
       )}
-      renderMark={(p) => (
-        <div {...p.props} key={p.props.key} className="range-mark">
-          <div className="range-mark-label">{props.titles[p.index]}</div>
-        </div>
-      )}
+      renderMark={(p) => {
+        const isFirst = p.index === 0;
+        const isLast = p.index === props.titles.length - 1;
+        const cn = `range-mark${isFirst ? " range-mark-first" : ""}${
+          isLast ? " range-mark-last" : ""
+        }`;
+        return (
+          <div {...p.props} key={p.props.key} className={cn}>
+            <div className="range-mark-label">{props.titles[p.index]}</div>
+          </div>
+        );
+      }}
       renderThumb={(p) => <div {...p.props} className="range-thumb" />}
     />
   );
