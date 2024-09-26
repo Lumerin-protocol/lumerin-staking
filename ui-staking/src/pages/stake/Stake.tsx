@@ -9,11 +9,11 @@ import { isErr } from "../../lib/error.ts";
 import type { stakingMasterChefAbi } from "../../blockchain/abi.ts";
 import { Spinner } from "../../icons/Spinner.tsx";
 import { Dialog } from "../../components/Dialog.tsx";
-import { formatAPY, formatLMR } from "../../lib/units.ts";
+import { formatLMR } from "../../lib/units.ts";
 import { TxProgress } from "../../components/TxProgress.tsx";
 import { getDisplayErrorMessage } from "../../helpers/error.ts";
 import "./Stake.css";
-import { BalanceLMR, BalanceUSD, DateTime } from "../../components/Balance.tsx";
+import { BalanceLMR, BalanceUSD, DateTime, PercentAPY } from "../../components/Balance.tsx";
 
 export const Stake = () => {
   const {
@@ -131,7 +131,7 @@ export const Stake = () => {
                     <h2>Stake Summary</h2>
                     <dl>
                       <dt>APY</dt>
-                      <dd>{apyValue ? formatAPY(apyValue) : "unknown"}</dd>
+                      <dd>{apyValue ? <PercentAPY fraction={apyValue} /> : "unknown"}</dd>
                       <dt>Lockup Period</dt>
                       <dd>{formatSeconds(lockDurationSeconds)}</dd>
                       <dt>Reward multiplier</dt>

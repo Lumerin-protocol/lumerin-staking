@@ -3,11 +3,10 @@ import { Container } from "../../components/Container.tsx";
 import { usePools } from "./usePools.ts";
 import { Spinner } from "../../icons/Spinner.tsx";
 import { Link } from "react-router-dom";
-import { BalanceLMR, BalanceMOR } from "../../components/Balance.tsx";
+import { BalanceLMR, BalanceMOR, PercentAPY } from "../../components/Balance.tsx";
 import "./Pools.css";
 import { MorpheusCircle } from "../../icons/MorpheusCircle.tsx";
 import { Chevron } from "../../icons/Chevron.tsx";
-import { formatAPY } from "../../lib/units.ts";
 import { LumerinCircle } from "../../icons/LumerinCircle.tsx";
 import { formatDuration } from "../../lib/date.ts";
 
@@ -50,7 +49,7 @@ export const Pools = () => {
                   <dl className="pool-item-stats">
                     <dt>Current APY</dt>
                     <dd title={pool.apy.toString()}>
-                      {pool.apy ? formatAPY(pool.apy) : "unknown"}
+                      {pool.apy ? <PercentAPY fraction={pool.apy} /> : "unknown"}
                     </dd>
                     <dt>Total Value Locked</dt>
                     <dd>

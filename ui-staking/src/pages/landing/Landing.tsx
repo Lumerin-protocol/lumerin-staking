@@ -20,7 +20,7 @@ export const Landing = () => {
 
   useEffect(() => {
     if (event.data.event === "CONNECT_SUCCESS") {
-      navigate("/pools/0");
+      navigate("/pools");
     }
   }, [event, navigate]);
 

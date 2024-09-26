@@ -117,4 +117,8 @@
   .pool-item-title .pool-name {
     font-size: 24px;
   }
+
+  .pool-item-stats dd {
+    font-size: 24px;
+  }
 }
