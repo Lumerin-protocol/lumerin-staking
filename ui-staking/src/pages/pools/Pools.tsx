@@ -49,7 +49,9 @@ export const Pools = () => {
                   </div>
                   <dl className="pool-item-stats">
                     <dt>Current APY</dt>
-                    <dd>{formatAPY(pool.apy)}</dd>
+                    <dd title={pool.apy.toString()}>
+                      {pool.apy ? formatAPY(pool.apy) : "unknown"}
+                    </dd>
                     <dt>Total Value Locked</dt>
                     <dd>
                       <BalanceLMR value={pool.pool.totalStaked} />
@@ -62,8 +64,6 @@ export const Pools = () => {
                     <dd>
                       <BalanceMOR value={pool.claimable} />
                     </dd>
-                    {(console.log({ startTime: pool.pool.startTime, timestamp }), null)}
-                    {(console.log(">>>>", pool.pool.startTime > timestamp), null)}
                     {pool.pool.startTime > timestamp && (
                       <>
                         <dt>Starts in</dt>

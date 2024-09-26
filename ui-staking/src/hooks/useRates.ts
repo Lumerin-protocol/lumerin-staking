@@ -32,7 +32,10 @@ export function useRates() {
       }
       const body = await response.json();
       const priceMap = body.data.attributes.token_prices as Record<string, string>;
-      return { mor: Number(priceMap[morAddress]), lmr: Number(priceMap[lmrAddress]) };
+      return {
+        mor: Number(priceMap[morAddress.toLowerCase()]),
+        lmr: Number(priceMap[lmrAddress.toLowerCase()]),
+      };
     },
     refetchInterval: 30 * 60 * 1000,
     refetchOnMount: false,
