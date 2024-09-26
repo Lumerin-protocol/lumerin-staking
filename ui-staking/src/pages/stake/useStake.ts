@@ -234,7 +234,7 @@ function validStakeAmount(
   }
   try {
     const value = parseDecimal(amount, decimals);
-    if (balance && value > balance) {
+    if (balance !== undefined && value > balance) {
       return { value, error: "Insufficient LMR balance" };
     }
 
