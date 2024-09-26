@@ -59,11 +59,13 @@ export const Stake = () => {
             </div>
             {locks.isLoading && <Spinner className="spinner-center" />}
             {(locks.isError || isNoLockPeriods || isPoolExpired) && (
-              <div className="error">
-                {isNoPoolError && "Pool not found"}
-                {locks.isError && !isNoPoolError && "Pool error"}
-                {isNoLockPeriods && "Lock periods not set"}
-                {isPoolExpired && "Pool expired"}
+              <div className="row">
+                <div className="error">
+                  {isNoPoolError && "Pool not found"}
+                  {locks.isError && !isNoPoolError && "Pool error"}
+                  {isNoLockPeriods && "Lock periods not set"}
+                  {isPoolExpired && "Pool ended"}
+                </div>
               </div>
             )}
             {locks.isSuccess && !isNoLockPeriods && !isPoolExpired && (
