@@ -18,17 +18,6 @@ function getSeparators() {
 
 const separators = getSeparators();
 
-export function formatPercent(fraction: number): string {
-  return `${formatUnits(BigInt(Math.round(fraction * 10000)), 2, true)}%`;
-}
-
-export function formatAPY(fraction: number): string {
-  if (fraction > 100) {
-    return `> ${formatAPY(100)}`;
-  }
-  return formatPercent(fraction);
-}
-
 export function formatETH(num: bigint): string {
   return `${formatUnits(num, decimalsETH)} ETH`;
 }
@@ -61,9 +50,15 @@ export function formatIntParts(num: bigint): { value: string; unit: string; mult
     return { value: numStr, unit: "", multiplier: 1n };
   }
   if (numLength < 7) {
-    return { value: formatUnits(num, 3, true), unit: "k", multiplier: 1000n };
+    return { value: formatUnits(num, 3, true), unit: "k", multiplier: 10n ** 3n };
   }
-  return { value: formatUnits(num, 6, true), unit: "M", multiplier: 1000000n };
+  if (numLength < 10) {
+    return { value: formatUnits(num, 6, true), unit: "M", multiplier: 10n ** 6n };
+  }
+  if (numLength < 13) {
+    return { value: formatUnits(num, 9, true), unit: "B", multiplier: 10n ** 9n };
+  }
+  return { value: formatUnits(num, 12, true), unit: "T", multiplier: 10n ** 12n };
 }
 
 const significantDigits = 3;

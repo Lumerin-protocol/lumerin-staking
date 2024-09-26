@@ -52,6 +52,22 @@ export const BalanceValue = (props: { value: bigint }) => {
   );
 };
 
+export const PercentAPY = (props: { fraction: number }) => {
+  let { fraction } = props;
+  const overflow = fraction > 10; // > 1000%
+  if (overflow) {
+    fraction = 10;
+  }
+
+  return (
+    <span className="balance percent" title={`${props.fraction * 100}%`}>
+      {overflow ? "> " : ""}
+      {formatUnits(BigInt(Math.round(fraction * 10000)), 2, true)}{" "}
+      <span className="currency unit">%</span>
+    </span>
+  );
+};
+
 export const DateTime = (props: { epochSeconds: bigint }) => {
   const date = new Date(Number(props.epochSeconds) * 1000);
   const dateFmt = new Intl.DateTimeFormat("en", {
