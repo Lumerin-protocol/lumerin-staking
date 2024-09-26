@@ -265,6 +265,8 @@ header {
 .error {
   font-size: 32px;
   font-weight: 600;
+  text-align: center;
+  padding: 1em 0;
 }
 
 .pool-progress {
