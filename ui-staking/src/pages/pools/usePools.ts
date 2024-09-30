@@ -5,6 +5,7 @@ import { getReward } from "../../helpers/reward.ts";
 import { useBlockchainTime } from "../../hooks/useBlockchainTime.ts";
 import { apy } from "../../helpers/apy.ts";
 import { useRates } from "../../hooks/useRates.ts";
+import { decimalsLMR } from "../../lib/units.ts";
 
 interface PoolData {
   rewardPerSecondScaled: bigint;
@@ -106,7 +107,7 @@ export function usePools() {
             apy: rates.isSuccess
               ? apy(
                   pool.rewardPerSecondScaled,
-                  pool.totalShares,
+                  1n * 10n ** decimalsLMR,
                   pool.totalShares,
                   precision.data!,
                   precision.data!,

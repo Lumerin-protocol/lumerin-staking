@@ -130,7 +130,9 @@ export const Stake = () => {
                   <div className="field summary">
                     <h2>Stake Summary</h2>
                     <dl>
-                      <dt>APY</dt>
+                      <dt title="The calculated APY is an estimate based on an ideal scenario, assuming no additional stakes are made">
+                        APY *
+                      </dt>
                       <dd>{apyValue ? <PercentAPY fraction={apyValue} /> : "unknown"}</dd>
                       <dt>Lockup Period</dt>
                       <dd>{formatSeconds(lockDurationSeconds)}</dd>

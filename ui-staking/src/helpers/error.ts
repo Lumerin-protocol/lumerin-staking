@@ -1,4 +1,8 @@
-import { ContractFunctionRevertedError, TransactionExecutionError, UserRejectedRequestError } from "viem";
+import {
+  ContractFunctionRevertedError,
+  TransactionExecutionError,
+  UserRejectedRequestError,
+} from "viem";
 import type { WriteContractErrorType } from "wagmi/actions";
 import { errorToPOJO } from "../lib/error.ts";
 
@@ -21,5 +25,5 @@ export function getDisplayErrorMessage(err: WriteContractErrorType | null): stri
     }
   }
 
-  return String(err.cause);
+  return String(err);
 }

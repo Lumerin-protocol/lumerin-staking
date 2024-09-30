@@ -20,7 +20,7 @@ export const Pools = () => {
         <Container>
           <h1 className="pools-heading">Available Pools</h1>
           {poolsData.isLoading && <Spinner />}
-          {poolsData.error && <p>Error loading pools</p>}
+          {poolsData.error && <p>Error loading pools. Make sure you connected your wallet.</p>}
           {poolsData.data?.length === 0 && <p>No pools available</p>}
           {poolsData.isSuccess && (
             <ul className="pool-list">
@@ -47,7 +47,9 @@ export const Pools = () => {
                     </div>
                   </div>
                   <dl className="pool-item-stats">
-                    <dt>Current APY</dt>
+                    <dt title="The calculated APY is an estimate based on an ideal scenario, assuming no additional stakes are made">
+                      Current APY *
+                    </dt>
                     <dd title={pool.apy.toString()}>
                       {pool.apy ? <PercentAPY fraction={pool.apy} /> : "unknown"}
                     </dd>

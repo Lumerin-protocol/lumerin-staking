@@ -68,7 +68,7 @@
 }
 
 .pool-item-stats dd {
-  font-size: 36px;
+  font-size: 28px;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -119,6 +119,6 @@
   }
 
   .pool-item-stats dd {
-    font-size: 24px;
+    font-size: 20px;
   }
 }
