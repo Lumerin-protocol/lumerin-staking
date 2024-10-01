@@ -20,8 +20,9 @@
 }
 
 .cta-stats .cta-stat p {
-  font-size: 54px;
+  font-size: 43px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .cta-stats .cta-stat h3 {
@@ -42,5 +43,15 @@
     max-width: 500px;
     width: 100%;
     flex-basis: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cta-stats .cta-stat p {
+    font-size: 40px;
+  }
+
+  .cta-stats .cta-stat h3 {
+    font-size: 18px;
   }
 }
