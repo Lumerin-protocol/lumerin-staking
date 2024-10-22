@@ -2,33 +2,39 @@ import { useState } from "react";
 import type { WriteContractErrorType } from "viem";
 import { usePublicClient } from "wagmi";
 
-export interface StartProps {
-  approveCall?: () => Promise<`0x${string}`>;
-  txCall: () => Promise<`0x${string}`>;
+export type TxResult = { hash: `0x${string}`; value: bigint };
+type TxResultBase = { hash: `0x${string}` };
+
+export interface StartProps<A, T> {
+  approveCall?: () => Promise<A>;
+  txCall: () => Promise<T>;
   onSuccess?: () => Promise<void>;
 }
 
 type Stage = "inactive" | "approving" | "approve-error" | "transacting" | "tx-error" | "done";
 
-export const useTxModal = () => {
+export const useTxModal = <
+  A extends TxResultBase = TxResult,
+  T extends TxResultBase = TxResult
+>() => {
   const [stage, setStage] = useState<Stage>("inactive");
-  const [approveTxHash, setApproveTxHash] = useState<`0x${string}` | null>(null);
-  const [txHash, setTxHash] = useState<`0x${string}` | null>(null);
+  const [approveTxResult, setApproveTxResult] = useState<A | null>(null);
+  const [txResult, setTxResult] = useState<T | null>(null);
   const [approveError, setApproveError] = useState<WriteContractErrorType | null>(null);
   const [txError, setTxError] = useState<WriteContractErrorType | null>(null);
   const pc = usePublicClient();
 
-  async function start(props: StartProps) {
+  async function start(props: StartProps<A, T>) {
     setStage("inactive");
-    setApproveTxHash(null);
+    setApproveTxResult(null);
     setApproveError(null);
 
     if (props.approveCall) {
       setStage("approving");
       try {
-        const approveTxHash = await props.approveCall();
-        setApproveTxHash(approveTxHash);
-        await pc?.waitForTransactionReceipt({ hash: approveTxHash });
+        const approveTx = await props.approveCall();
+        setApproveTxResult(approveTx);
+        await pc?.waitForTransactionReceipt({ hash: approveTx.hash });
       } catch (e) {
         setStage("approve-error");
         setApproveError(e as WriteContractErrorType);
@@ -38,9 +44,9 @@ export const useTxModal = () => {
 
     setStage("transacting");
     try {
-      const txHash = await props.txCall();
-      setTxHash(txHash);
-      await pc?.waitForTransactionReceipt({ hash: txHash });
+      const tx = await props.txCall();
+      setTxResult(tx);
+      await pc?.waitForTransactionReceipt({ hash: tx.hash });
     } catch (e) {
       setStage("tx-error");
       setTxError(e as WriteContractErrorType);
@@ -52,16 +58,16 @@ export const useTxModal = () => {
 
   function reset() {
     setStage("inactive");
-    setApproveTxHash(null);
-    setTxHash(null);
+    setApproveTxResult(null);
+    setTxResult(null);
     setApproveError(null);
     setTxError(null);
   }
 
   return {
     stage,
-    approveTxHash,
-    txHash,
+    approveTxHash: approveTxResult,
+    txHash: txResult,
     approveError,
     txError,
     start,

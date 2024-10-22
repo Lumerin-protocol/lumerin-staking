@@ -18,3 +18,15 @@ ul.info .button-item {
   grid-row: auto / span 2;
   align-self: end;
 }
+
+.stake-list .section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.contract-button .icon {
+  width: 1.5em;
+  height: 1.5em;
+  margin-right: 0.5em;
+}

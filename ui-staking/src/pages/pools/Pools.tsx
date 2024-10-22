@@ -13,6 +13,10 @@ import { formatDuration } from "../../lib/date.ts";
 export const Pools = () => {
   const { poolsData, timestamp } = usePools();
 
+  if (poolsData.error) {
+    console.log(poolsData.error);
+  }
+
   return (
     <>
       <Header />

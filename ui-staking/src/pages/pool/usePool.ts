@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useAccount, useBalance, useReadContract, useWriteContract } from "wagmi";
+import { useAccount, useBalance, useConfig, useReadContract, useWriteContract } from "wagmi";
 import { stakingMasterChefAbi } from "../../blockchain/abi.ts";
-import { erc20Abi } from "viem";
+import { erc20Abi, getAddress, parseEventLogs } from "viem";
 import { mapPoolDataAndDerive } from "../../helpers/pool.ts";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -11,21 +11,21 @@ import {
   filterUserLMRBalanceQuery,
   filterUserMORBalanceQuery,
 } from "../../helpers/invalidators.ts";
-import { useTxModal } from "../../hooks/useTxModal.ts";
+import { TxResult, useTxModal } from "../../hooks/useTxModal.ts";
 import { useBlockchainTime } from "../../hooks/useBlockchainTime.ts";
 import { isErr } from "../../lib/error.ts";
+import { waitForTransactionReceipt } from "wagmi/actions";
 
 export function usePool(onUpdate: () => void) {
+  const config = useConfig();
   const writeContract = useWriteContract();
 
   const { poolId: poolIdString } = useParams();
   const poolId = poolIdString !== "" ? Number(poolIdString) : undefined;
+
   const navigate = useNavigate();
-
-  const { address, chain } = useAccount();
-
+  const { address, chain, isConnected } = useAccount();
   const timestamp = useBlockchainTime();
-
   const qc = useQueryClient();
 
   const poolDataArr = useReadContract({
@@ -53,6 +53,7 @@ export function usePool(onUpdate: () => void) {
     functionName: "getStakes",
     args: [address as `0x${string}`, BigInt(poolId as number)],
     query: {
+      enabled: address !== undefined,
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       refetchOnReconnect: false,
@@ -99,7 +100,10 @@ export function usePool(onUpdate: () => void) {
   });
 
   const withdrawModal = useTxModal();
-  const unstakeModal = useTxModal();
+  const unstakeModal = useTxModal<
+    TxResult,
+    { hash: `0x${string}`; valueMOR: bigint; valueLMR: bigint }
+  >();
 
   const locksMap = new Map<bigint, bigint>(
     locks.data?.map(({ durationSeconds, multiplierScaled }) => [durationSeconds, multiplierScaled])
@@ -114,13 +118,27 @@ export function usePool(onUpdate: () => void) {
     }
 
     await unstakeModal.start({
-      txCall: async () =>
-        writeContract.writeContractAsync({
+      txCall: async () => {
+        const hash = await writeContract.writeContractAsync({
           abi: stakingMasterChefAbi,
           address: process.env.REACT_APP_STAKING_ADDR as `0x${string}`,
           functionName: "unstake",
           args: [BigInt(poolId), stakeId],
-        }),
+        });
+        const tx = await waitForTransactionReceipt(config, { hash });
+        let valueMOR = BigInt(0);
+        let valueLMR = BigInt(0);
+        const logs = parseEventLogs({ abi: erc20Abi, logs: tx.logs, eventName: "Transfer" });
+        console.log("LOGGSSSSSS", logs);
+        for (const log of logs) {
+          if (getAddress(log.address) === getAddress(process.env.REACT_APP_MOR_ADDR)) {
+            valueMOR = log.args.value;
+          } else if (getAddress(log.address) === getAddress(process.env.REACT_APP_LMR_ADDR)) {
+            valueLMR = log.args.value;
+          }
+        }
+        return { hash, valueMOR, valueLMR };
+      },
       onSuccess: async () => {
         await qc.invalidateQueries({
           predicate: filterPoolQuery(BigInt(poolId)),
@@ -157,13 +175,22 @@ export function usePool(onUpdate: () => void) {
     }
 
     await withdrawModal.start({
-      txCall: async () =>
-        writeContract.writeContractAsync({
+      txCall: async () => {
+        const hash = await writeContract.writeContractAsync({
           abi: stakingMasterChefAbi,
           address: process.env.REACT_APP_STAKING_ADDR as `0x${string}`,
           functionName: "withdrawReward",
           args: [BigInt(poolId), stakeId],
-        }),
+        });
+        const tx = await waitForTransactionReceipt(config, { hash });
+        const logs = parseEventLogs({
+          abi: stakingMasterChefAbi,
+          logs: tx.logs,
+          eventName: "RewardWithdrawal",
+        });
+        const value = logs?.[0].args.amount;
+        return { hash, value };
+      },
       onSuccess: async () => {
         await qc.invalidateQueries({
           predicate: filterPoolQuery(BigInt(poolId)),
@@ -209,5 +236,6 @@ export function usePool(onUpdate: () => void) {
     navigate,
     withdrawModal,
     unstakeModal,
+    isDisconnected: !isConnected,
   };
 }

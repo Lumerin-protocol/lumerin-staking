@@ -46,9 +46,14 @@ export const Landing = () => {
               <Button onClick={() => disconnect()}>Disconnect</Button>
             </>
           ) : (
-            <Button className="button-primary" onClick={() => open({ view: "Connect" })}>
-              Connect Wallet <Arrow />
-            </Button>
+            <>
+              <Button className="button-primary" onClick={() => open({ view: "Connect" })}>
+                Connect Wallet <Arrow />
+              </Button>
+              <Link className="button" to="/pools">
+                View Pools
+              </Link>
+            </>
           )}
         </div>
         <div className="cta-stats">

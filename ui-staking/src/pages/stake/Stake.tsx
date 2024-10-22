@@ -1,7 +1,8 @@
+import { useAccount } from "wagmi";
+import prettyMilliseconds from "pretty-ms";
 import { ContainerNarrow } from "../../components/Container.tsx";
 import { Header } from "../../components/Header.tsx";
 import { LumerinIcon } from "../../icons/LumerinIcon.tsx";
-import prettyMilliseconds from "pretty-ms";
 import { RangeSelect } from "../../components/RangeSelect.tsx";
 import { useStake } from "./useStake.ts";
 import { formatDuration } from "../../lib/date.ts";
@@ -12,8 +13,9 @@ import { Dialog } from "../../components/Dialog.tsx";
 import { formatLMR } from "../../lib/units.ts";
 import { TxProgress } from "../../components/TxProgress.tsx";
 import { getDisplayErrorMessage } from "../../helpers/error.ts";
-import "./Stake.css";
 import { BalanceLMR, BalanceUSD, DateTime, PercentAPY } from "../../components/Balance.tsx";
+import { usePreventInputScroll } from "../../hooks/usePreventInputScroll.ts";
+import "./Stake.css";
 
 export const Stake = () => {
   const {
@@ -38,6 +40,10 @@ export const Stake = () => {
     lmrBalance,
     lmrBalanceUsd,
   } = useStake();
+
+  const { isConnected } = useAccount();
+
+  const inputRef = usePreventInputScroll();
 
   const isNoPoolError = isErr<typeof stakingMasterChefAbi>(locks.error, "PoolOrStakeNotExists");
   const isNoLockPeriods = locks.isSuccess && locks.data.length === 0;
@@ -77,6 +83,7 @@ export const Stake = () => {
                         <input
                           // biome-ignore lint/a11y/noAutofocus: the main focus is on this input
                           autoFocus
+                          ref={inputRef}
                           id="stake-amount"
                           type="number"
                           value={stakeAmount}
@@ -89,7 +96,6 @@ export const Stake = () => {
                                 : "0"
                             )
                           }
-                          onWheel={(e) => e.currentTarget.blur()}
                         />
                         <button
                           className="button input-max"
@@ -158,7 +164,8 @@ export const Stake = () => {
                       className="button button-primary"
                       type="submit"
                       onClick={onStake}
-                      disabled={stakeAmount === "0" || stakeAmountValidErr !== ""}
+                      title={!isConnected ? "Connect wallet" : ""}
+                      disabled={stakeAmount === "0" || stakeAmountValidErr !== "" || !isConnected}
                     >
                       Stake
                     </button>
@@ -177,24 +184,26 @@ export const Stake = () => {
                 </p>
                 <ul className="tx-stages">
                   <li>
-                    <p className="stage-name">Approving funds</p>
-                    <p className="stage-progress">
+                    <div className="stage-name">Approving funds</div>
+                    <div className="stage-progress">
                       <TxProgress
                         isTransacting={txModal.isApproving}
-                        txHash={txModal.approveTxHash}
+                        txHash={txModal.approveTxHash?.hash}
+                        action={`Approved ${formatLMR(txModal.approveTxHash?.value || 0n)}.`}
                         error={getDisplayErrorMessage(txModal.approveError)}
                       />
-                    </p>
+                    </div>
                   </li>
                   <li>
-                    <p className="stage-name">Adding stake</p>
-                    <p className="stage-progress">
+                    <div className="stage-name">Adding stake</div>
+                    <div className="stage-progress">
                       <TxProgress
                         isTransacting={txModal.isTransacting}
-                        txHash={txModal.txHash}
+                        txHash={txModal.txHash?.hash}
+                        action={`Staked ${formatLMR(stakeAmountDecimals)}.`}
                         error={getDisplayErrorMessage(txModal.txError)}
                       />
-                    </p>
+                    </div>
                   </li>
                 </ul>
                 <button

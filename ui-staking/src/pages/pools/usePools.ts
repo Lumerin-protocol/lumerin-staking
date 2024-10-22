@@ -6,6 +6,7 @@ import { useBlockchainTime } from "../../hooks/useBlockchainTime.ts";
 import { apy } from "../../helpers/apy.ts";
 import { useRates } from "../../hooks/useRates.ts";
 import { decimalsLMR } from "../../lib/units.ts";
+import { ReadContractErrorType } from "viem";
 
 interface PoolData {
   rewardPerSecondScaled: bigint;
@@ -60,71 +61,98 @@ export function usePools() {
 
   const rates = useRates();
 
-  const poolsData = useReadContracts({
+  const rawPoolsData = useReadContracts({
     allowFailure: false,
-    contracts: [
-      ...createArray(
-        Number(totalPools.data),
-        (i) =>
-          ({
-            abi: stakingMasterChefAbi,
-            address: process.env.REACT_APP_STAKING_ADDR as `0x${string}`,
-            functionName: "pools",
-            args: [i],
-          } as const)
-      ),
-      ...createArray(
-        Number(totalPools.data),
-        (i) =>
-          ({
-            abi: stakingMasterChefAbi,
-            address: process.env.REACT_APP_STAKING_ADDR as `0x${string}`,
-            functionName: "getStakes",
-            args: [address, i],
-          } as const)
-      ),
-    ],
+    contracts: createArray(
+      Number(totalPools.data),
+      (i) =>
+        ({
+          abi: stakingMasterChefAbi,
+          address: process.env.REACT_APP_STAKING_ADDR as `0x${string}`,
+          functionName: "pools",
+          args: [i],
+        } as const)
+    ),
+  });
+
+  const rawStakeData = useReadContracts({
+    allowFailure: false,
+    contracts: createArray(
+      Number(totalPools.data),
+      (i) =>
+        ({
+          abi: stakingMasterChefAbi,
+          address: process.env.REACT_APP_STAKING_ADDR as `0x${string}`,
+          functionName: "getStakes",
+          args: [address, i],
+        } as const)
+    ),
     query: {
-      select(data) {
-        const poolAndStakes: PoolAndStakes[] = [];
-
-        const rawPoolData = data.slice(0, Number(totalPools.data)) as PoolDataRaw[];
-        const rawStakeData = data.slice(Number(totalPools.data)) as StakeData[][];
-
-        for (let i = 0; i < Number(totalPools.data); i++) {
-          const userStakes = rawStakeData[i].map((stake, j) => ({ id: j, ...stake }));
-          const pool = mapPoolData(rawPoolData[i])!;
-
-          poolAndStakes.push({
-            id: i,
-            pool,
-            userStakes,
-            deposited: userStakes.reduce((acc, stake) => acc + stake.stakeAmount, 0n),
-            claimable: userStakes.reduce(
-              (acc, stake) => acc + getReward(stake, pool, timestamp, precision.data!),
-              0n
-            ),
-            apy: rates.isSuccess
-              ? apy(
-                  pool.rewardPerSecondScaled,
-                  1n * 10n ** decimalsLMR,
-                  pool.totalShares,
-                  precision.data!,
-                  precision.data!,
-                  rates.data.mor,
-                  rates.data.lmr
-                )
-              : 0,
-          });
-        }
-        return poolAndStakes;
-      },
+      enabled: address !== undefined,
     },
   });
 
-  return { totalPools, poolsData, timestamp };
+  const poolsData = mapPoolAndStakes(
+    rawPoolsData.data || [],
+    rawStakeData.data || [],
+    precision.data as bigint,
+    timestamp,
+    rates.data?.mor || 0,
+    rates.data?.lmr || 0
+  );
+
+  return {
+    totalPools,
+    poolsData: {
+      data: poolsData,
+      isLoading: rawPoolsData.isLoading || rawStakeData.isLoading,
+      isSuccess: rawPoolsData.isSuccess && (rawStakeData.isPending || rawStakeData.isSuccess),
+      error: (rawPoolsData.error || rawStakeData.error) as ReadContractErrorType,
+    },
+    timestamp,
+  };
 }
 
 function createArray<T>(length: number, cb: (i: number) => T): T[] {
   return Array.from({ length }, (_, i) => cb(i));
+}
+
+function mapPoolAndStakes(
+  rawPoolData: PoolDataRaw[],
+  rawStakeData: (readonly StakeData[])[],
+  precision: bigint,
+  timestamp: bigint,
+  morRate: number,
+  lmrRate: number
+): PoolAndStakes[] {
+  const poolAndStakes: PoolAndStakes[] = [];
+
+  for (let i = 0; i < Number(rawPoolData.length); i++) {
+    const pool = mapPoolData(rawPoolData[i])!;
+    const userStakes = rawStakeData?.[i]?.map((stake, j) => ({ id: j, ...stake })) || [];
+
+    poolAndStakes.push({
+      id: i,
+      pool,
+      userStakes,
+      deposited: userStakes.reduce((acc, stake) => acc + stake.stakeAmount, 0n),
+      claimable: userStakes.reduce(
+        (acc, stake) => acc + getReward(stake, pool, timestamp, precision),
+        0n
+      ),
+      apy:
+        morRate && lmrRate
+          ? apy(
+              pool.rewardPerSecondScaled,
+              1n * 10n ** decimalsLMR,
+              pool.totalShares,
+              precision,
+              precision,
+              morRate,
+              lmrRate
+            )
+          : 0,
+    });
+  }
+  return poolAndStakes;
 }

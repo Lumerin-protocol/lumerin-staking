@@ -24,7 +24,7 @@ async function main() {
       durationSeconds: duration,
       startDate,
       totalReward: totalReward,
-      lockDurations: fixturesStaking.getDefaultDurationsMedium(precision),
+      lockDurations: fixturesStaking.getDefaultDurationsShort(precision),
     },
     {
       durationSeconds: duration,

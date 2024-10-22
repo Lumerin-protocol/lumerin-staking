@@ -21,7 +21,9 @@ import {
 } from "../../components/Balance.tsx";
 import "./Pool.css";
 import { Arrow } from "../../icons/Arrow.tsx";
-import { formatInt } from "../../lib/units.ts";
+import { formatLMR, formatMOR } from "../../lib/units.ts";
+import { getReadContractURL } from "../../helpers/indexer.ts";
+import { Arbiscan } from "../../icons/Arbiscan.tsx";
 
 export const Pool = () => {
   const {
@@ -44,7 +46,10 @@ export const Pool = () => {
     withdrawModal,
     unstakeModal,
     ethBalance,
+    isDisconnected,
   } = usePool(() => {});
+
+  console.log("is disconnected", isDisconnected);
 
   const activeStakes = stakes.data
     ?.map((stake, id) => ({ id, ...stake }))
@@ -151,6 +156,7 @@ export const Pool = () => {
                     <Button
                       className="button button-primary button-small"
                       onClick={() => navigate(`/pools/${poolId}/stake`)}
+                      disabled={isDisconnected}
                     >
                       Stake
                     </Button>
@@ -158,14 +164,33 @@ export const Pool = () => {
                 </ul>
               </section>
               <section className="section stake-list">
-                <h2 className="section-heading">My Stakes</h2>
+                <div className="section-heading">
+                  <h2>My Stakes</h2>
+                  <Link
+                    className="button button-small contract-button"
+                    to={
+                      getReadContractURL(
+                        process.env.REACT_APP_STAKING_ADDR as `0x${string}`,
+                        chain,
+                        6
+                      ) || ""
+                    }
+                    target="_blank"
+                  >
+                    <Arbiscan className="icon" />
+                    Check on explorer
+                  </Link>
+                </div>
                 {stakes.isLoading && (
                   <div className="spinner-container">
                     <Spinner />
                   </div>
                 )}
+                {isDisconnected && (
+                  <div className="stake-list-info">Connect wallet to see your stakes.</div>
+                )}
                 {activeStakes?.length === 0 && (
-                  <div className="stake-list-no-stakes">No stakes found</div>
+                  <div className="stake-list-info">No stakes found.</div>
                 )}
                 <ul className="stakes">
                   {poolData &&
@@ -311,14 +336,15 @@ export const Pool = () => {
             <p>Withdrawing all of your staking rewards</p>
             <ul className="tx-stages">
               <li>
-                <p className="stage-name">Withdraw transaction</p>
-                <p className="stage-progress">
+                <div className="stage-name">Withdraw transaction</div>
+                <div className="stage-progress">
                   <TxProgress
                     isTransacting={withdrawModal.isTransacting}
-                    txHash={withdrawModal.txHash}
+                    txHash={withdrawModal.txHash?.hash}
+                    action={`Withdrew ${formatMOR(withdrawModal.txHash?.value || 0n)}.`}
                     error={getDisplayErrorMessage(withdrawModal.txError)}
                   />
-                </p>
+                </div>
               </li>
             </ul>
             <button
@@ -344,14 +370,17 @@ export const Pool = () => {
             <p>Withdrawing your stake and all of the collected rewards</p>
             <ul className="tx-stages">
               <li>
-                <p className="stage-name">Unstaking</p>
-                <p className="stage-progress">
+                <div className="stage-name">Unstaking</div>
+                <div className="stage-progress">
                   <TxProgress
                     isTransacting={unstakeModal.isTransacting}
-                    txHash={unstakeModal.txHash}
+                    txHash={unstakeModal.txHash?.hash}
+                    action={`Unstaked ${formatLMR(
+                      unstakeModal.txHash?.valueLMR || 0n
+                    )} and ${formatMOR(unstakeModal.txHash?.valueMOR || 0n)}.`}
                     error={getDisplayErrorMessage(unstakeModal.txError)}
                   />
-                </p>
+                </div>
               </li>
             </ul>
             <button

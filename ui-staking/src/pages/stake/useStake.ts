@@ -1,4 +1,4 @@
-import { useAccount, usePublicClient, useReadContract, useWriteContract } from "wagmi";
+import { useAccount, useConfig, usePublicClient, useReadContract, useWriteContract } from "wagmi";
 import { erc20Abi, stakingMasterChefAbi } from "../../blockchain/abi.ts";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -11,11 +11,12 @@ import {
   filterUserLMRBalanceQuery,
 } from "../../helpers/invalidators.ts";
 import { useTxModal } from "../../hooks/useTxModal.ts";
-import { formatUnits } from "viem";
+import { formatUnits, parseEventLogs } from "viem";
 import { useBlockchainTime } from "../../hooks/useBlockchainTime.ts";
 import { apy } from "../../helpers/apy.ts";
 import { useRates } from "../../hooks/useRates.ts";
 import { parseDecimal } from "../../lib/decimal.ts";
+import { waitForTransactionReceipt } from "wagmi/actions";
 
 export function useStake() {
   // set initial state
@@ -28,6 +29,7 @@ export function useStake() {
   const [stakeAmount, _setStakeAmount] = useState("0");
   const [stakeAmountValidEnabled, setStakeAmountValidEnabled] = useState(false);
   const txModal = useTxModal();
+  const config = useConfig();
 
   const timestamp = useBlockchainTime();
 
@@ -75,7 +77,7 @@ export function useStake() {
     functionName: "balanceOf",
     args: [address as `0x${string}`],
     query: {
-      enabled: !!address,
+      enabled: address !== undefined,
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       refetchOnReconnect: false,
@@ -151,20 +153,28 @@ export function useStake() {
     }
 
     await txModal.start({
-      approveCall: () =>
-        writeContract.writeContractAsync({
+      approveCall: async () => {
+        const hash = await writeContract.writeContractAsync({
           abi: erc20Abi,
           address: process.env.REACT_APP_LMR_ADDR as `0x${string}`,
           functionName: "approve",
           args: [process.env.REACT_APP_STAKING_ADDR as `0x${string}`, stakeAmountDecimals],
-        }),
-      txCall: () =>
-        writeContract.writeContractAsync({
+        });
+        const receipt = await waitForTransactionReceipt(config, { hash });
+        const event = parseEventLogs({ abi: erc20Abi, logs: receipt.logs }).find(
+          (e) => e.eventName === "Approval"
+        );
+        return { hash, value: event?.args.value || 0n };
+      },
+      txCall: async () => {
+        const hash = await writeContract.writeContractAsync({
           abi: [...stakingMasterChefAbi, ...erc20Abi],
           address: process.env.REACT_APP_STAKING_ADDR as `0x${string}`,
           functionName: "stake",
           args: [BigInt(poolId), stakeAmountDecimals, lockIndex],
-        }),
+        });
+        return { hash, value: 0n };
+      },
       onSuccess: async () => {
         await qc.invalidateQueries({
           predicate: filterPoolQuery(BigInt(poolId)),
