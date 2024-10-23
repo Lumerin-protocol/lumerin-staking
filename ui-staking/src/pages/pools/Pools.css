@@ -23,7 +23,6 @@
 .pool-item-title {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  justify-content: space-between;
   padding: 25px 35px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -39,11 +38,6 @@
 
 .pool-icon .to {
   margin-left: -10px;
-}
-
-.pool-item-title div {
-  flex-basis: 0;
-  flex-grow: 1;
 }
 
 .pool-name {
@@ -76,6 +70,7 @@
 
 .pool-direction-chevron {
   margin: 0 0.5em;
+  flex: 0 0 auto;
 }
 
 .pool-action .button {
@@ -114,8 +109,23 @@
 }
 
 @media (max-width: 480px) {
+  .pool-item-title {
+    grid-template-columns: repeat(2, auto);
+  }
   .pool-item-title .pool-name {
     font-size: 24px;
+  }
+
+  .pool-item-stats {
+    grid-template-columns: auto auto;
+    grid-auto-rows: auto;
+    grid-auto-flow: row;
+    gap: 0.7em 0.5em;
+    align-items: baseline;
+  }
+
+  .pool-item-stats dt {
+    margin-top: 0;
   }
 
   .pool-item-stats dd {

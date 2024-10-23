@@ -178,7 +178,7 @@ export const Pool = () => {
                     target="_blank"
                   >
                     <Arbiscan className="icon" />
-                    Check on explorer
+                    <span className="text">Check on explorer</span>
                   </Link>
                 </div>
                 {stakes.isLoading && (
@@ -244,7 +244,8 @@ export const Pool = () => {
                               earned
                             </li>
                             <li className="multiplier">
-                              <span className="number">{rewardMultiplierString}</span> multiplier
+                              <span className="number">{rewardMultiplierString}</span>{" "}
+                              <span className="text">multiplier</span>
                             </li>
                           </ul>
                           <ul className="checked">

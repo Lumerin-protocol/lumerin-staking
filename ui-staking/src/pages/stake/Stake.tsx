@@ -76,7 +76,7 @@ export const Stake = () => {
             )}
             {locks.isSuccess && !isNoLockPeriods && !isPoolExpired && (
               <>
-                <div className="row">
+                <div className="row row-stake-amount">
                   <div className="field stake-amount">
                     <div className="field-input">
                       <div className="input-field-wrap">
@@ -110,7 +110,7 @@ export const Stake = () => {
                       </label>
                     </div>
                     <div className="lmr-balance">
-                      <div className="title">LMR Balance</div>
+                      <div className="title">Balance</div>
                       <div className="value">
                         <BalanceLMR value={lmrBalance.data || 0n} /> ≈{" "}
                         <BalanceUSD value={lmrBalanceUsd.data || 0} />
@@ -127,6 +127,7 @@ export const Stake = () => {
                         label="Lockup period"
                         value={lockIndex}
                         titles={locks.data.map((l) => formatSeconds(l.durationSeconds))}
+                        titlesShort={locks.data.map((l) => formatDuration(l.durationSeconds))}
                         onChange={setLockIndex}
                       />
                     </div>

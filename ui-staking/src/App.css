@@ -710,6 +710,7 @@ dl.current-reward {
   }
   .cta-buttons {
     margin-top: 80px;
+    flex-wrap: wrap;
   }
   .lens {
     /* display: none; */
@@ -717,32 +718,10 @@ dl.current-reward {
   .container,
   .container-narrow {
     width: 100%;
-    padding: 0 20px;
+    padding: 0 30px;
     max-width: unset;
   }
   .button {
     width: 100%;
-  }
-
-  .stake .value {
-    font-size: 15px;
-  }
-
-  .stake .progress {
-    grid-row-start: 5;
-    grid-column: span 2;
-    display: flex;
-    justify-content: center;
-    flex-direction: row;
-  }
-
-  .toogle {
-    margin-right: 10px;
-    padding: 0;
-    width: 20px;
-    height: 50px;
-    margin-right: 10px;
-    flex-shrink: 0;
-    align-self: flex-start;
   }
 }

@@ -140,6 +140,10 @@ input::-webkit-inner-spin-button {
   padding: 2px 5px;
 }
 
+.range-mark-label-short {
+  display: none;
+}
+
 .range-thumb {
   height: 20px;
   width: 20px;
@@ -279,17 +283,30 @@ input::-webkit-inner-spin-button {
     margin: 0 15px 0 5px;
   }
 
-  .range-mark-first .range-mark-label {
-    transform: translateX(-15%);
+  .range-mark-label {
+    display: none;
   }
 
-  .range-mark-last .range-mark-label {
-    transform: translateX(-85%);
+  .range-mark-label-short {
+    display: block;
   }
 
   .input-max {
     width: unset;
     padding-left: 15px;
     padding-right: 15px;
+  }
+
+  .stake-amount .lmr-balance {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .stake-amount {
+    margin: 0;
+  }
+
+  .row-stake-amount {
+    padding-bottom: 10px;
   }
 }

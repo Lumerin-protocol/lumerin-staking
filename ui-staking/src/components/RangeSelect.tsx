@@ -4,6 +4,7 @@ interface RangeSelect {
   value: number;
   label?: string;
   titles: string[];
+  titlesShort?: string[];
   onChange: (value: number) => void;
 }
 
@@ -33,6 +34,11 @@ export const RangeSelect = (props: RangeSelect) => {
         return (
           <div {...p.props} key={p.props.key} className={cn}>
             <div className="range-mark-label">{props.titles[p.index]}</div>
+            {props.titlesShort && (
+              <div className="range-mark-label range-mark-label-short">
+                {props.titlesShort[p.index]}
+              </div>
+            )}
           </div>
         );
       }}

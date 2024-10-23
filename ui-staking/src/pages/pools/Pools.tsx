@@ -51,13 +51,13 @@ export const Pools = () => {
                     </div>
                   </div>
                   <dl className="pool-item-stats">
-                    <dt title="The calculated APY is an estimate based on an ideal scenario, assuming no additional stakes are made">
+                    <dt title="The calculated Annual Percentage Yield (APY) is an estimate based on an ideal scenario, assuming no additional stakes are made">
                       Current APY *
                     </dt>
                     <dd title={pool.apy.toString()}>
                       {pool.apy ? <PercentAPY fraction={pool.apy} /> : "unknown"}
                     </dd>
-                    <dt>Total Value Locked</dt>
+                    <dt title="Total Value Locked (TVL) in staking">TVL *</dt>
                     <dd>
                       <BalanceLMR value={pool.pool.totalStaked} />
                     </dd>

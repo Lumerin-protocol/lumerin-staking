@@ -1,5 +1,5 @@
 export const LumerinLogo: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 168 60" {...props}>
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="10 0 168 60" {...props}>
     <title>Lumerin Logo</title>
     <path
       fill="#fff"
