@@ -72,7 +72,7 @@ export const DateTime = (props: { epochSeconds: bigint }) => {
   const date = new Date(Number(props.epochSeconds) * 1000);
   const dateFmt = new Intl.DateTimeFormat("en", {
     year: "numeric",
-    month: "long",
+    month: "short",
     day: "numeric",
   });
 

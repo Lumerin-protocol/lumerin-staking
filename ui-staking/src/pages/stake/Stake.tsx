@@ -39,6 +39,7 @@ export const Stake = () => {
     lockEndsAt,
     lmrBalance,
     lmrBalanceUsd,
+    chain,
   } = useStake();
 
   const { isConnected } = useAccount();
@@ -140,7 +141,9 @@ export const Stake = () => {
                       <dt title="The calculated APY is an estimate based on an ideal scenario, assuming no additional stakes are made">
                         APY *
                       </dt>
-                      <dd>{apyValue ? <PercentAPY fraction={apyValue} /> : "unknown"}</dd>
+                      <dd>
+                        <PercentAPY fraction={apyValue || 0} />{" "}
+                      </dd>
                       <dt>Lockup Period</dt>
                       <dd>{formatSeconds(lockDurationSeconds)}</dd>
                       <dt>Reward multiplier</dt>
@@ -188,6 +191,7 @@ export const Stake = () => {
                     <div className="stage-name">Approving funds</div>
                     <div className="stage-progress">
                       <TxProgress
+                        chain={chain}
                         isTransacting={txModal.isApproving}
                         txHash={txModal.approveTxHash?.hash}
                         action={`Approved ${formatLMR(txModal.approveTxHash?.value || 0n)}.`}
@@ -199,6 +203,7 @@ export const Stake = () => {
                     <div className="stage-name">Adding stake</div>
                     <div className="stage-progress">
                       <TxProgress
+                        chain={chain}
                         isTransacting={txModal.isTransacting}
                         txHash={txModal.txHash?.hash}
                         action={`Staked ${formatLMR(stakeAmountDecimals)}.`}

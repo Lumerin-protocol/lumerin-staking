@@ -340,6 +340,7 @@ export const Pool = () => {
                 <div className="stage-name">Withdraw transaction</div>
                 <div className="stage-progress">
                   <TxProgress
+                    chain={chain}
                     isTransacting={withdrawModal.isTransacting}
                     txHash={withdrawModal.txHash?.hash}
                     action={`Withdrew ${formatMOR(withdrawModal.txHash?.value || 0n)}.`}
@@ -374,6 +375,7 @@ export const Pool = () => {
                 <div className="stage-name">Unstaking</div>
                 <div className="stage-progress">
                   <TxProgress
+                    chain={chain}
                     isTransacting={unstakeModal.isTransacting}
                     txHash={unstakeModal.txHash?.hash}
                     action={`Unstaked ${formatLMR(
