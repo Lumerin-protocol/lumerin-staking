@@ -10,6 +10,7 @@ import { BalanceLMR, BalanceMOR } from "../../components/Balance.tsx";
 import { useLanding } from "./useLanding.ts";
 import "./Landing.css";
 import { Arrow } from "../../icons/Arrow.tsx";
+import { Spinner } from "../../icons/Spinner.tsx";
 
 export const Landing = () => {
   const { isConnected } = useAccount();
@@ -24,7 +25,7 @@ export const Landing = () => {
     }
   }, [event, navigate]);
 
-  const { totalPools, availableRewardsMOR, tvlLMR } = useLanding();
+  const stats = useLanding();
 
   return (
     <>
@@ -57,24 +58,28 @@ export const Landing = () => {
           )}
         </div>
         <div className="cta-stats">
-          <div className="cta-stat">
-            <p>{totalPools.isSuccess ? String(totalPools.data) : "Error"}</p>
-            <h3>Total Pools</h3>
-          </div>
-          <div className="cta-stat">
-            <p>
-              {availableRewardsMOR.isSuccess ? (
-                <BalanceMOR value={availableRewardsMOR.data} />
-              ) : (
-                "Error"
-              )}
-            </p>
-            <h3>Available Rewards</h3>
-          </div>
-          <div className="cta-stat">
-            <p>{tvlLMR.isSuccess ? <BalanceLMR value={tvlLMR.data} /> : "Error"}</p>
-            <h3>Total Value Locked</h3>
-          </div>
+          {stats.isLoading && <Spinner className="spinner-center" />}
+          {stats.isError && <p>Error loading stats data</p>}
+          {stats.isSuccess && (
+            <>
+              <div className="cta-stat">
+                <p>{String(stats.data.totalPools)}</p>
+                <h3>Total Pools</h3>
+              </div>
+              <div className="cta-stat">
+                <p>
+                  <BalanceMOR value={stats.data.availableRewardsMOR} />
+                </p>
+                <h3>Available Rewards</h3>
+              </div>
+              <div className="cta-stat">
+                <p>
+                  <BalanceLMR value={stats.data.tvlLMR} />
+                </p>
+                <h3>Total Value Locked</h3>
+              </div>
+            </>
+          )}
         </div>
       </Container>
     </>

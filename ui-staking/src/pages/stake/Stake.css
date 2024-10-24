@@ -238,6 +238,10 @@ input::-webkit-inner-spin-button {
   font-size: 1em;
 }
 
+.lockup-ends-value {
+  text-align: center;
+}
+
 @media (max-width: 768px) {
   .stake-amount label {
     display: none;

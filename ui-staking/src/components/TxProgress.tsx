@@ -11,9 +11,10 @@ interface Props {
   txHash?: `0x${string}` | null;
   action?: string;
   error?: string | null | unknown;
+  chain: Chain | undefined;
 }
 
-export function TxProgress(props: Props, chain: Chain) {
+export function TxProgress(props: Props) {
   const { isTransacting, error, txHash } = props;
   const isSuccess = !isTransacting && !error && !!txHash;
   const isError = !!error;
@@ -36,7 +37,7 @@ export function TxProgress(props: Props, chain: Chain) {
           <div className="title">Transaction succesfull</div>
           {props.action && <div className="action">{props.action}</div>}
           <div className="url">
-            <Link to={getTxURL(txHash, chain) || ""} target="_blank">
+            <Link to={getTxURL(txHash, props.chain) || ""} target="_blank">
               View on explorer
             </Link>
           </div>
@@ -51,7 +52,7 @@ export function TxProgress(props: Props, chain: Chain) {
           <div className="action">{String(error)}</div>
           {txHash && (
             <div className="url">
-              <Link to={getTxURL(txHash, chain) || ""} target="_blank">
+              <Link to={getTxURL(txHash, props.chain) || ""} target="_blank">
                 View on explorer
               </Link>
             </div>
