@@ -117,19 +117,17 @@ export function usePools() {
     lockDurations.isLoading ||
     precision.isLoading;
 
-  const isSuccess =
-    rawPoolsData.isSuccess &&
-    lockDurations.isSuccess &&
-    rawStakeData.isSuccess &&
-    precision.isSuccess;
+  const isSuccess = rawPoolsData.isSuccess && lockDurations.isSuccess && precision.isSuccess;
 
   const error = rawPoolsData.error || rawStakeData.error || lockDurations.error || precision.error;
+
+  console.log(rawStakeData.data, rawStakeData.error, rawStakeData.isLoading);
 
   const data = isSuccess
     ? mapPoolAndStakes(
         rawPoolsData.data,
         lockDurations.data,
-        rawStakeData.data,
+        rawStakeData.data || [], // loading stakes is deferred until the user is logged in
         precision.data,
         timestamp,
         rates.data?.mor || 0,
