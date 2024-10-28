@@ -138,8 +138,12 @@ export const Stake = () => {
                   <div className="field summary">
                     <h2>Stake Summary</h2>
                     <dl>
-                      <dt title="The calculated APY is an estimate based on an ideal scenario, assuming no additional stakes are made">
+                      <dt className="has-tooltip">
                         APY *
+                        <div className="tooltip">
+                          The calculated APY is an estimate based on an ideal scenario, assuming no
+                          additional stakes are made
+                        </div>
                       </dt>
                       <dd>
                         <PercentAPY fraction={apyValue || 0} />{" "}
@@ -192,6 +196,11 @@ export const Stake = () => {
                     <div className="stage-progress">
                       <TxProgress
                         chain={chain}
+                        skippedMessage={
+                          txModal.approveTxHash?.hash === "0x0"
+                            ? "Funds already approved"
+                            : undefined
+                        }
                         isTransacting={txModal.isApproving}
                         txHash={txModal.approveTxHash?.hash}
                         action={`Approved ${formatLMR(txModal.approveTxHash?.value || 0n)}.`}

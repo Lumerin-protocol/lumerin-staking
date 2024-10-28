@@ -49,8 +49,6 @@ export const Pool = () => {
     isDisconnected,
   } = usePool(() => {});
 
-  console.log("is disconnected", isDisconnected);
-
   const activeStakes = stakes.data
     ?.map((stake, id) => ({ id, ...stake }))
     .filter((stake) => stake.stakeAmount > 0n);
@@ -238,14 +236,18 @@ export const Pool = () => {
                               <span className="chart-small-text">{timeLeftString}</span>
                             </li>
                             <li className="reward">
-                              <BalanceMOR
-                                value={getReward(stake, poolData, timestamp, precision.data)}
-                              />{" "}
-                              earned
+                              <span>
+                                <BalanceMOR
+                                  value={getReward(stake, poolData, timestamp, precision.data)}
+                                />{" "}
+                                earned
+                              </span>
                             </li>
                             <li className="multiplier">
-                              <span className="number">{rewardMultiplierString}</span>{" "}
-                              <span className="text">multiplier</span>
+                              <span>
+                                <span className="number">{rewardMultiplierString}</span>{" "}
+                                <span className="text">multiplier</span>
+                              </span>
                             </li>
                           </ul>
                           <ul className="checked">

@@ -34,7 +34,6 @@ export const useTxModal = <
       try {
         const approveTx = await props.approveCall();
         setApproveTxResult(approveTx);
-        await pc?.waitForTransactionReceipt({ hash: approveTx.hash });
       } catch (e) {
         setStage("approve-error");
         setApproveError(e as WriteContractErrorType);
@@ -46,7 +45,6 @@ export const useTxModal = <
     try {
       const tx = await props.txCall();
       setTxResult(tx);
-      await pc?.waitForTransactionReceipt({ hash: tx.hash });
     } catch (e) {
       setStage("tx-error");
       setTxError(e as WriteContractErrorType);

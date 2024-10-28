@@ -26,7 +26,6 @@ export function filterStakeQuery(poolId: bigint) {
       return false;
     }
     if (params?.functionName === "getStakes" && params?.args?.[1] === BigInt(poolId)) {
-      console.log("invalidating getStakes", params);
       return true;
     }
     return false;

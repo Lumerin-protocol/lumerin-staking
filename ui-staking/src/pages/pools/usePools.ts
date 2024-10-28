@@ -38,6 +38,11 @@ interface PoolAndStakes {
   apy: number;
 }
 
+interface LockDuration {
+  durationSeconds: bigint;
+  multiplierScaled: bigint;
+}
+
 export function usePools() {
   const { address } = useAccount();
   const timestamp = useBlockchainTime();
@@ -75,6 +80,20 @@ export function usePools() {
     ),
   });
 
+  const lockDurations = useReadContracts({
+    allowFailure: false,
+    contracts: createArray(
+      Number(totalPools.data),
+      (i) =>
+        ({
+          abi: stakingMasterChefAbi,
+          address: process.env.REACT_APP_STAKING_ADDR as `0x${string}`,
+          functionName: "getLockDurations",
+          args: [i],
+        } as const)
+    ),
+  });
+
   const rawStakeData = useReadContracts({
     allowFailure: false,
     contracts: createArray(
@@ -92,22 +111,39 @@ export function usePools() {
     },
   });
 
-  const poolsData = mapPoolAndStakes(
-    rawPoolsData.data || [],
-    rawStakeData.data || [],
-    precision.data as bigint,
-    timestamp,
-    rates.data?.mor || 0,
-    rates.data?.lmr || 0
-  );
+  const isLoading =
+    rawPoolsData.isLoading ||
+    rawStakeData.isLoading ||
+    lockDurations.isLoading ||
+    precision.isLoading;
+
+  const isSuccess =
+    rawPoolsData.isSuccess &&
+    lockDurations.isSuccess &&
+    rawStakeData.isSuccess &&
+    precision.isSuccess;
+
+  const error = rawPoolsData.error || rawStakeData.error || lockDurations.error || precision.error;
+
+  const data = isSuccess
+    ? mapPoolAndStakes(
+        rawPoolsData.data,
+        lockDurations.data,
+        rawStakeData.data,
+        precision.data,
+        timestamp,
+        rates.data?.mor || 0,
+        rates.data?.lmr || 0
+      )
+    : [];
 
   return {
     totalPools,
     poolsData: {
-      data: poolsData,
-      isLoading: rawPoolsData.isLoading || rawStakeData.isLoading,
-      isSuccess: rawPoolsData.isSuccess && (rawStakeData.isPending || rawStakeData.isSuccess),
-      error: (rawPoolsData.error || rawStakeData.error) as ReadContractErrorType,
+      data,
+      isLoading,
+      isSuccess,
+      error: error as ReadContractErrorType,
     },
     timestamp,
   };
@@ -119,6 +155,7 @@ function createArray<T>(length: number, cb: (i: number) => T): T[] {
 
 function mapPoolAndStakes(
   rawPoolData: PoolDataRaw[],
+  rawLockDurations: (readonly LockDuration[])[],
   rawStakeData: (readonly StakeData[])[],
   precision: bigint,
   timestamp: bigint,
@@ -130,6 +167,10 @@ function mapPoolAndStakes(
   for (let i = 0; i < Number(rawPoolData.length); i++) {
     const pool = mapPoolData(rawPoolData[i])!;
     const userStakes = rawStakeData?.[i]?.map((stake, j) => ({ id: j, ...stake })) || [];
+    const bestMultiplierScaled = rawLockDurations[i].reduce<bigint>(
+      (acc, cur) => (cur.multiplierScaled > acc ? cur.multiplierScaled : acc),
+      0n
+    );
 
     poolAndStakes.push({
       id: i,
@@ -146,7 +187,7 @@ function mapPoolAndStakes(
               pool.rewardPerSecondScaled,
               1n * 10n ** decimalsLMR,
               pool.totalShares,
-              precision,
+              bestMultiplierScaled,
               precision,
               morRate,
               lmrRate

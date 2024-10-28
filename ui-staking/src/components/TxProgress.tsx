@@ -8,6 +8,7 @@ import "./TxProgress.css";
 
 interface Props {
   isTransacting: boolean;
+  skippedMessage?: string;
   txHash?: `0x${string}` | null;
   action?: string;
   error?: string | null | unknown;
@@ -15,8 +16,9 @@ interface Props {
 }
 
 export function TxProgress(props: Props) {
-  const { isTransacting, error, txHash } = props;
-  const isSuccess = !isTransacting && !error && !!txHash;
+  const { isTransacting, skippedMessage, error, txHash } = props;
+  const isSkipped = !!skippedMessage;
+  const isSuccess = !isTransacting && !error && !!txHash && !isSkipped;
   const isError = !!error;
 
   return (
@@ -41,6 +43,15 @@ export function TxProgress(props: Props) {
               View on explorer
             </Link>
           </div>
+        </div>
+      )}
+      {isSkipped && (
+        <div className="progress success">
+          <div className="icon">
+            <Check fill="#fff" className="tx-icon" />
+          </div>
+          <div className="title">Transaction skipped</div>
+          {props.action && <div className="action">{props.skippedMessage}</div>}
         </div>
       )}
       {isError && (

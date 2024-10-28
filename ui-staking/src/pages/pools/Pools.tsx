@@ -14,7 +14,7 @@ export const Pools = () => {
   const { poolsData, timestamp } = usePools();
 
   if (poolsData.error) {
-    console.log(poolsData.error);
+    console.error(poolsData.error);
   }
 
   return (
@@ -51,21 +51,32 @@ export const Pools = () => {
                     </div>
                   </div>
                   <dl className="pool-item-stats">
-                    <dt title="The calculated Annual Percentage Yield (APY) is an estimate based on an ideal scenario, assuming no additional stakes are made">
-                      Current APY *
+                    <dt>
+                      <div className="has-tooltip">
+                        Current APY *
+                        <div className="tooltip">
+                          The calculated Annual Percentage Yield (APY) is an estimate based on an
+                          ideal scenario, assuming the maximum lock period multiplier is used and no
+                          new stakes are added
+                        </div>
+                      </div>
                     </dt>
                     <dd title={pool.apy.toString()}>
                       {pool.apy ? <PercentAPY fraction={pool.apy} /> : "unknown"}
                     </dd>
-                    <dt title="Total Value Locked (TVL) in staking">TVL *</dt>
+                    <dt>
+                      <div className="has-tooltip">
+                        TVL *<div className="tooltip">Total Value Locked (TVL) in the pool</div>
+                      </div>
+                    </dt>
                     <dd>
                       <BalanceLMR value={pool.pool.totalStaked} />
                     </dd>
-                    <dt>Deposited</dt>
+                    <dt>You've deposited</dt>
                     <dd>
                       <BalanceLMR value={pool.deposited} />
                     </dd>
-                    <dt>Claimable</dt>
+                    <dt>You've earned</dt>
                     <dd>
                       <BalanceMOR value={pool.claimable} />
                     </dd>
@@ -73,14 +84,22 @@ export const Pools = () => {
                       <>
                         <dt>Starts in</dt>
                         <dd>
-                          {formatDuration(pool.pool.startTime - timestamp, { compact: true })}
+                          {formatDuration(pool.pool.startTime - timestamp, {
+                            compact: true,
+                            verbose: true,
+                          })}
                         </dd>
                       </>
                     )}
                     {pool.pool.startTime < timestamp && pool.pool.endTime > timestamp && (
                       <>
                         <dt>Ends in</dt>
-                        <dd>{formatDuration(pool.pool.endTime - timestamp, { compact: true })}</dd>
+                        <dd>
+                          {formatDuration(pool.pool.endTime - timestamp, {
+                            compact: true,
+                            verbose: true,
+                          })}
+                        </dd>
                       </>
                     )}
                     {pool.pool.endTime < timestamp && (
