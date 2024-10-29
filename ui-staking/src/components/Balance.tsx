@@ -68,6 +68,33 @@ export const PercentAPY = (props: { fraction: number }) => {
   );
 };
 
+export const PercentAPYRange = (props: { min: number; max: number }) => {
+  const enDash = "–";
+
+  let { min, max } = props;
+  const overflow = min > 10; // > 1000%
+  if (overflow) {
+    min = 10;
+    return (
+      <span className="balance percent" title={`${min * 100}%`}>
+        {"> "}
+        {formatUnits(BigInt(Math.round(min * 10000)), 2, true)}
+        <span className="currency unit">%</span>
+      </span>
+    );
+  }
+
+  return (
+    <span className="balance percent" title={`${min * 100}% - ${max * 100}%`}>
+      {formatUnits(BigInt(Math.round(min * 10000)), 2, true)}
+      <span className="currency unit">%</span>
+      <span className="dash">{enDash}</span>
+      {formatUnits(BigInt(Math.round(max * 10000)), 2, true)}
+      <span className="currency unit">%</span>
+    </span>
+  );
+};
+
 export const DateTime = (props: { epochSeconds: bigint }) => {
   const date = new Date(Number(props.epochSeconds) * 1000);
   const dateFmt = new Intl.DateTimeFormat("en", {

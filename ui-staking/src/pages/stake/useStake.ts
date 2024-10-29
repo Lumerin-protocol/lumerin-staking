@@ -16,12 +16,12 @@ import { useBlockchainTime } from "../../hooks/useBlockchainTime.ts";
 import { apy } from "../../helpers/apy.ts";
 import { useRates } from "../../hooks/useRates.ts";
 import { parseDecimal } from "../../lib/decimal.ts";
-import { waitForTransactionReceipt } from "wagmi/actions";
+import { readContract, waitForTransactionReceipt } from "wagmi/actions";
 
 export function useStake() {
   // set initial state
   const { poolId: poolIdString } = useParams();
-  const { address, chain } = useAccount();
+  const { address } = useAccount();
   const poolId = Number(poolIdString);
   const navigate = useNavigate();
 
@@ -30,6 +30,7 @@ export function useStake() {
   const [stakeAmountValidEnabled, setStakeAmountValidEnabled] = useState(false);
   const txModal = useTxModal();
   const config = useConfig();
+  const [chain] = config.chains;
 
   const timestamp = useBlockchainTime();
 
@@ -154,6 +155,16 @@ export function useStake() {
 
     await txModal.start({
       approveCall: async () => {
+        const currentAllowance = await readContract(config, {
+          abi: erc20Abi,
+          address: process.env.REACT_APP_LMR_ADDR as `0x${string}`,
+          functionName: "allowance",
+          args: [address, process.env.REACT_APP_STAKING_ADDR as `0x${string}`],
+        });
+        if (currentAllowance >= stakeAmountDecimals) {
+          return { hash: "0x0", value: currentAllowance };
+        }
+
         const hash = await writeContract.writeContractAsync({
           abi: erc20Abi,
           address: process.env.REACT_APP_LMR_ADDR as `0x${string}`,
@@ -173,6 +184,7 @@ export function useStake() {
           functionName: "stake",
           args: [BigInt(poolId), stakeAmountDecimals, lockIndex],
         });
+        await waitForTransactionReceipt(config, { hash });
         return { hash, value: 0n };
       },
       onSuccess: async () => {

@@ -19,12 +19,13 @@ import { waitForTransactionReceipt } from "wagmi/actions";
 export function usePool(onUpdate: () => void) {
   const config = useConfig();
   const writeContract = useWriteContract();
+  const [chain] = config.chains;
 
   const { poolId: poolIdString } = useParams();
   const poolId = poolIdString !== "" ? Number(poolIdString) : undefined;
 
   const navigate = useNavigate();
-  const { address, chain, isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const timestamp = useBlockchainTime();
   const qc = useQueryClient();
 
@@ -129,7 +130,6 @@ export function usePool(onUpdate: () => void) {
         let valueMOR = BigInt(0);
         let valueLMR = BigInt(0);
         const logs = parseEventLogs({ abi: erc20Abi, logs: tx.logs, eventName: "Transfer" });
-        console.log("LOGGSSSSSS", logs);
         for (const log of logs) {
           if (getAddress(log.address) === getAddress(process.env.REACT_APP_MOR_ADDR)) {
             valueMOR = log.args.value;

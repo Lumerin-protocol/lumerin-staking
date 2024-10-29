@@ -1,20 +1,20 @@
+import { Link } from "react-router-dom";
 import { Header } from "../../components/Header.tsx";
 import { Container } from "../../components/Container.tsx";
 import { usePools } from "./usePools.ts";
 import { Spinner } from "../../icons/Spinner.tsx";
-import { Link } from "react-router-dom";
-import { BalanceLMR, BalanceMOR, PercentAPY } from "../../components/Balance.tsx";
-import "./Pools.css";
+import { BalanceLMR, BalanceMOR, PercentAPYRange } from "../../components/Balance.tsx";
 import { MorpheusCircle } from "../../icons/MorpheusCircle.tsx";
 import { Chevron } from "../../icons/Chevron.tsx";
 import { LumerinCircle } from "../../icons/LumerinCircle.tsx";
 import { formatDuration } from "../../lib/date.ts";
+import "./Pools.css";
 
 export const Pools = () => {
   const { poolsData, timestamp } = usePools();
 
   if (poolsData.error) {
-    console.log(poolsData.error);
+    console.error(poolsData.error);
   }
 
   return (
@@ -23,7 +23,11 @@ export const Pools = () => {
       <main>
         <Container>
           <h1 className="pools-heading">Available Pools</h1>
-          {poolsData.isLoading && <Spinner />}
+          {poolsData.isLoading && (
+            <div className="spinner-container">
+              <Spinner />
+            </div>
+          )}
           {poolsData.error && <p>Error loading pools. Make sure you connected your wallet.</p>}
           {poolsData.data?.length === 0 && <p>No pools available</p>}
           {poolsData.isSuccess && (
@@ -39,11 +43,7 @@ export const Pools = () => {
                       LMR <Chevron className="pool-direction-chevron" angle={90} width="0.7em" />{" "}
                       MOR
                     </div>
-                    <div className="pool-empty">
-                      {/* <Link className="button" to={`/pools/${pool.id}/stake`}>
-                        Stake LMR
-                      </Link> */}
-                    </div>
+                    <div className="pool-empty"></div>
                     <div className="pool-action">
                       <Link className="button" to={`/pools/${pool.id}`}>
                         View Pool
@@ -51,21 +51,32 @@ export const Pools = () => {
                     </div>
                   </div>
                   <dl className="pool-item-stats">
-                    <dt title="The calculated Annual Percentage Yield (APY) is an estimate based on an ideal scenario, assuming no additional stakes are made">
-                      Current APY *
+                    <dt>
+                      <div className="has-tooltip">
+                        Current APY *
+                        <div className="tooltip">
+                          The calculated Annual Percentage Yield (APY) is an estimate based on an
+                          ideal scenario, assuming the maximum lock period multiplier is used and no
+                          new stakes are added
+                        </div>
+                      </div>
                     </dt>
-                    <dd title={pool.apy.toString()}>
-                      {pool.apy ? <PercentAPY fraction={pool.apy} /> : "unknown"}
+                    <dd>
+                      {pool.apy ? <PercentAPYRange min={pool.apy.min} max={pool.apy.max} /> : "n/a"}
                     </dd>
-                    <dt title="Total Value Locked (TVL) in staking">TVL *</dt>
+                    <dt>
+                      <div className="has-tooltip">
+                        TVL *<div className="tooltip">Total Value Locked (TVL) in the pool</div>
+                      </div>
+                    </dt>
                     <dd>
                       <BalanceLMR value={pool.pool.totalStaked} />
                     </dd>
-                    <dt>Deposited</dt>
+                    <dt>You've deposited</dt>
                     <dd>
                       <BalanceLMR value={pool.deposited} />
                     </dd>
-                    <dt>Claimable</dt>
+                    <dt>You've earned</dt>
                     <dd>
                       <BalanceMOR value={pool.claimable} />
                     </dd>
@@ -73,14 +84,22 @@ export const Pools = () => {
                       <>
                         <dt>Starts in</dt>
                         <dd>
-                          {formatDuration(pool.pool.startTime - timestamp, { compact: true })}
+                          {formatDuration(pool.pool.startTime - timestamp, {
+                            compact: true,
+                            verbose: true,
+                          })}
                         </dd>
                       </>
                     )}
                     {pool.pool.startTime < timestamp && pool.pool.endTime > timestamp && (
                       <>
                         <dt>Ends in</dt>
-                        <dd>{formatDuration(pool.pool.endTime - timestamp, { compact: true })}</dd>
+                        <dd>
+                          {formatDuration(pool.pool.endTime - timestamp, {
+                            compact: true,
+                            verbose: true,
+                          })}
+                        </dd>
                       </>
                     )}
                     {pool.pool.endTime < timestamp && (

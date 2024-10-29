@@ -4,7 +4,7 @@ import { Separator } from "../../components/Separator.tsx";
 import { Container } from "../../components/Container.tsx";
 import { usePool } from "./usePool.ts";
 import { Chart } from "../../components/Chart.tsx";
-import { formatDate, formatDuration } from "../../lib/date.ts";
+import { formatDuration } from "../../lib/date.ts";
 import { Button } from "../../components/Button.tsx";
 import { SpoilerToogle } from "../../components/SpoilerToogle.tsx";
 import { getReward } from "../../helpers/reward.ts";
@@ -13,7 +13,7 @@ import { Dialog } from "../../components/Dialog.tsx";
 import { TxProgress } from "../../components/TxProgress.tsx";
 import { getDisplayErrorMessage } from "../../helpers/error.ts";
 import {
-  BalanceCurrency,
+  BalanceETH,
   BalanceLMR,
   BalanceMOR,
   BalanceValue,
@@ -48,8 +48,6 @@ export const Pool = () => {
     ethBalance,
     isDisconnected,
   } = usePool(() => {});
-
-  console.log("is disconnected", isDisconnected);
 
   const activeStakes = stakes.data
     ?.map((stake, id) => ({ id, ...stake }))
@@ -139,19 +137,21 @@ export const Pool = () => {
                 <h2 className="section-heading">Wallet balance</h2>
                 <Separator />
                 <ul className="info">
-                  <li>
-                    <BalanceCurrency
-                      value={ethBalance.data?.value || 0n}
-                      currency={ethBalance.data?.symbol || ""}
-                      decimals={ethBalance.data?.decimals || 18}
-                    />
-                  </li>
-                  <li>
-                    <BalanceLMR value={lmrBalance.data || 0n} />
-                  </li>
-                  <li>
-                    <BalanceMOR value={morBalance.data || 0n} />
-                  </li>
+                  {isDisconnected ? (
+                    <li className="not-connected">Wallet is not connected</li>
+                  ) : (
+                    <>
+                      <li>
+                        <BalanceETH value={ethBalance.data?.value || 0n} />
+                      </li>
+                      <li>
+                        <BalanceLMR value={lmrBalance.data || 0n} />
+                      </li>
+                      <li>
+                        <BalanceMOR value={morBalance.data || 0n} />
+                      </li>
+                    </>
+                  )}
                   <li className="button-item">
                     <Button
                       className="button button-primary button-small"
@@ -238,14 +238,18 @@ export const Pool = () => {
                               <span className="chart-small-text">{timeLeftString}</span>
                             </li>
                             <li className="reward">
-                              <BalanceMOR
-                                value={getReward(stake, poolData, timestamp, precision.data)}
-                              />{" "}
-                              earned
+                              <span>
+                                <BalanceMOR
+                                  value={getReward(stake, poolData, timestamp, precision.data)}
+                                />{" "}
+                                earned
+                              </span>
                             </li>
                             <li className="multiplier">
-                              <span className="number">{rewardMultiplierString}</span>{" "}
-                              <span className="text">multiplier</span>
+                              <span>
+                                <span className="number">{rewardMultiplierString}</span>{" "}
+                                <span className="text">multiplier</span>
+                              </span>
                             </li>
                           </ul>
                           <ul className="checked">

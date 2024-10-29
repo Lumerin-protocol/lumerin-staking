@@ -3,6 +3,10 @@
   padding: 30px 65px;
 }
 
+.row:last-child {
+  border-bottom: none;
+}
+
 .add-stake {
   display: flex;
   flex-direction: column;

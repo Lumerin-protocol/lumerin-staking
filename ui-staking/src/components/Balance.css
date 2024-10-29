@@ -5,3 +5,11 @@
 .value.datetime .year {
   font-size: 0.8em;
 }
+
+.percent .dash {
+  padding: 0 0.1em;
+}
+
+.percent .unit {
+  padding-left: 0.1em;
+}
