@@ -35,7 +35,7 @@ interface PoolAndStakes {
   userStakes: AddId<StakeData>[];
   deposited: bigint;
   claimable: bigint;
-  apy: number;
+  apy: { min: number; max: number } | null;
 }
 
 interface LockDuration {
@@ -133,16 +133,28 @@ export function usePools() {
         rates.data?.mor || 0,
         rates.data?.lmr || 0
       )
-    : [];
+    : undefined;
+
+  // const poolsData = isSuccess ? {}
 
   return {
     totalPools,
-    poolsData: {
-      data,
-      isLoading,
-      isSuccess,
-      error: error as ReadContractErrorType,
-    },
+    poolsData: isSuccess
+      ? {
+          data: mapPoolAndStakes(
+            rawPoolsData.data,
+            lockDurations.data,
+            rawStakeData.data || [], // loading stakes is deferred until the user is logged in
+            precision.data,
+            timestamp,
+            rates.data?.mor || 0,
+            rates.data?.lmr || 0
+          ),
+          isLoading: false as const,
+          isSuccess: true as const,
+          error: null,
+        }
+      : { isLoading, isSuccess: false as const, error: error as ReadContractErrorType },
     timestamp,
   };
 }
@@ -169,6 +181,34 @@ function mapPoolAndStakes(
       (acc, cur) => (cur.multiplierScaled > acc ? cur.multiplierScaled : acc),
       0n
     );
+    const worstMultiplierScaled = rawLockDurations[i].reduce<bigint>(
+      (acc, cur) => (cur.multiplierScaled < acc ? cur.multiplierScaled : acc),
+      bestMultiplierScaled
+    );
+
+    const apyData =
+      morRate && lmrRate
+        ? {
+            min: apy(
+              pool.rewardPerSecondScaled,
+              1n,
+              pool.totalShares,
+              worstMultiplierScaled,
+              precision,
+              morRate,
+              lmrRate
+            ),
+            max: apy(
+              pool.rewardPerSecondScaled,
+              1n * 10n ** decimalsLMR,
+              pool.totalShares,
+              bestMultiplierScaled,
+              precision,
+              morRate,
+              lmrRate
+            ),
+          }
+        : null;
 
     poolAndStakes.push({
       id: i,
@@ -179,18 +219,7 @@ function mapPoolAndStakes(
         (acc, stake) => acc + getReward(stake, pool, timestamp, precision),
         0n
       ),
-      apy:
-        morRate && lmrRate
-          ? apy(
-              pool.rewardPerSecondScaled,
-              1n * 10n ** decimalsLMR,
-              pool.totalShares,
-              bestMultiplierScaled,
-              precision,
-              morRate,
-              lmrRate
-            )
-          : 0,
+      apy: apyData,
     });
   }
   return poolAndStakes;

@@ -1,14 +1,14 @@
+import { Link } from "react-router-dom";
 import { Header } from "../../components/Header.tsx";
 import { Container } from "../../components/Container.tsx";
 import { usePools } from "./usePools.ts";
 import { Spinner } from "../../icons/Spinner.tsx";
-import { Link } from "react-router-dom";
-import { BalanceLMR, BalanceMOR, PercentAPY } from "../../components/Balance.tsx";
-import "./Pools.css";
+import { BalanceLMR, BalanceMOR, PercentAPYRange } from "../../components/Balance.tsx";
 import { MorpheusCircle } from "../../icons/MorpheusCircle.tsx";
 import { Chevron } from "../../icons/Chevron.tsx";
 import { LumerinCircle } from "../../icons/LumerinCircle.tsx";
 import { formatDuration } from "../../lib/date.ts";
+import "./Pools.css";
 
 export const Pools = () => {
   const { poolsData, timestamp } = usePools();
@@ -23,7 +23,11 @@ export const Pools = () => {
       <main>
         <Container>
           <h1 className="pools-heading">Available Pools</h1>
-          {poolsData.isLoading && <Spinner />}
+          {poolsData.isLoading && (
+            <div className="spinner-container">
+              <Spinner />
+            </div>
+          )}
           {poolsData.error && <p>Error loading pools. Make sure you connected your wallet.</p>}
           {poolsData.data?.length === 0 && <p>No pools available</p>}
           {poolsData.isSuccess && (
@@ -39,11 +43,7 @@ export const Pools = () => {
                       LMR <Chevron className="pool-direction-chevron" angle={90} width="0.7em" />{" "}
                       MOR
                     </div>
-                    <div className="pool-empty">
-                      {/* <Link className="button" to={`/pools/${pool.id}/stake`}>
-                        Stake LMR
-                      </Link> */}
-                    </div>
+                    <div className="pool-empty"></div>
                     <div className="pool-action">
                       <Link className="button" to={`/pools/${pool.id}`}>
                         View Pool
@@ -61,8 +61,8 @@ export const Pools = () => {
                         </div>
                       </div>
                     </dt>
-                    <dd title={pool.apy.toString()}>
-                      {pool.apy ? <PercentAPY fraction={pool.apy} /> : "unknown"}
+                    <dd>
+                      {pool.apy ? <PercentAPYRange min={pool.apy.min} max={pool.apy.max} /> : "n/a"}
                     </dd>
                     <dt>
                       <div className="has-tooltip">

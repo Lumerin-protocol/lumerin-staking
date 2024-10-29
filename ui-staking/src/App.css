@@ -314,6 +314,13 @@ ul.info li {
   line-height: normal;
 }
 
+ul.info li.not-connected {
+  font-size: 16px;
+  font-weight: 400;
+  height: 30px;
+  align-content: center;
+}
+
 .info dt {
   grid-column-start: 1;
   font-size: 14px;
