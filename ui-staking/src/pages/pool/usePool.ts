@@ -19,12 +19,13 @@ import { waitForTransactionReceipt } from "wagmi/actions";
 export function usePool(onUpdate: () => void) {
   const config = useConfig();
   const writeContract = useWriteContract();
+  const [chain] = config.chains;
 
   const { poolId: poolIdString } = useParams();
   const poolId = poolIdString !== "" ? Number(poolIdString) : undefined;
 
   const navigate = useNavigate();
-  const { address, chain, isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const timestamp = useBlockchainTime();
   const qc = useQueryClient();
 

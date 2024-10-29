@@ -21,7 +21,7 @@ import { readContract, waitForTransactionReceipt } from "wagmi/actions";
 export function useStake() {
   // set initial state
   const { poolId: poolIdString } = useParams();
-  const { address, chain } = useAccount();
+  const { address } = useAccount();
   const poolId = Number(poolIdString);
   const navigate = useNavigate();
 
@@ -30,6 +30,7 @@ export function useStake() {
   const [stakeAmountValidEnabled, setStakeAmountValidEnabled] = useState(false);
   const txModal = useTxModal();
   const config = useConfig();
+  const [chain] = config.chains;
 
   const timestamp = useBlockchainTime();
 
