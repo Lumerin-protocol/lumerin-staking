@@ -660,7 +660,8 @@ dl.current-reward {
   border-radius: var(--border-radius);
   padding: 0.5em;
   text-align: center;
-  font-size: 0.9em;
+  font-size: 0.8rem;
+  font-weight: 400;
 }
 
 .has-tooltip:hover .tooltip {

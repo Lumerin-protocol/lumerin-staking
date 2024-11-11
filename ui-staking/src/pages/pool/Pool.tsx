@@ -18,12 +18,20 @@ import {
   BalanceMOR,
   BalanceValue,
   DateTime,
+  PercentAPY,
 } from "../../components/Balance.tsx";
 import "./Pool.css";
 import { Arrow } from "../../icons/Arrow.tsx";
 import { formatLMR, formatMOR } from "../../lib/units.ts";
 import { getReadContractURL } from "../../helpers/indexer.ts";
 import { Arbiscan } from "../../icons/Arbiscan.tsx";
+import { apy } from "../../helpers/apy.ts";
+import { useRates } from "../../hooks/useRates.ts";
+
+const apyString =
+  "The calculated Annual Percentage Yield (APY) is an estimate based " +
+  "on the assumption that no stakes are withdrawn, no new stakes are " +
+  "added, and token prices remain at their current levels.";
 
 export const Pool = () => {
   const {
@@ -48,6 +56,7 @@ export const Pool = () => {
     ethBalance,
     isDisconnected,
   } = usePool(() => {});
+  const rates = useRates();
 
   const activeStakes = stakes.data
     ?.map((stake, id) => ({ id, ...stake }))
@@ -222,6 +231,19 @@ export const Pool = () => {
                           ? formatDuration(lockRemainingSeconds)
                           : "Stake unlocked";
 
+                      const apyValue =
+                        rewardMultiplier && rates.data
+                          ? apy(
+                              poolData.rewardPerSecondScaled,
+                              stake.stakeAmount,
+                              poolData.totalShares,
+                              rewardMultiplier,
+                              precision.data,
+                              rates.data.mor,
+                              rates.data.lmr
+                            )
+                          : null;
+
                       return (
                         <li key={stake.id} className="stake">
                           <SpoilerToogle />
@@ -246,9 +268,14 @@ export const Pool = () => {
                               </span>
                             </li>
                             <li className="multiplier">
-                              <span>
-                                <span className="number">{rewardMultiplierString}</span>{" "}
-                                <span className="text">multiplier</span>
+                              <span className="has-tooltip">
+                                <div>
+                                  <span className="number">
+                                    {apyValue ? <PercentAPY fraction={apyValue} /> : "n/a"}
+                                  </span>{" "}
+                                  <span className="text">APY *</span>
+                                </div>
+                                <div className="tooltip">{apyString}</div>
                               </span>
                             </li>
                           </ul>
@@ -290,9 +317,13 @@ export const Pool = () => {
                               </p>
                             </li>
                             <li>
-                              <p className="title">Share Amount</p>
+                              <p className="title">
+                                <div className="has-tooltip">
+                                  Average APY * <div className="tooltip">{apyString}</div>
+                                </div>
+                              </p>
                               <p className="value">
-                                <BalanceValue value={stake.shareAmount} />
+                                {apyValue ? <PercentAPY fraction={apyValue} /> : "n/a"}
                               </p>
                             </li>
                             <li>
