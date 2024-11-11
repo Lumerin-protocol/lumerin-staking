@@ -62,7 +62,8 @@ export const PercentAPY = (props: { fraction: number }) => {
   return (
     <span className="balance percent" title={`${props.fraction * 100}%`}>
       {overflow ? "> " : ""}
-      {formatUnits(BigInt(Math.round(fraction * 10000)), 2, true)}{" "}
+      {formatUnits(BigInt(Math.round(fraction * 10000)), 2, true)}
+      {" "}
       <span className="currency unit">%</span>
     </span>
   );
