@@ -7,6 +7,7 @@ import { apy } from "../../helpers/apy.ts";
 import { useRates } from "../../hooks/useRates.ts";
 import { decimalsLMR } from "../../lib/units.ts";
 import { ReadContractErrorType } from "viem";
+import { max } from "../../lib/bigint.ts";
 
 interface PoolData {
   rewardPerSecondScaled: bigint;
@@ -35,6 +36,7 @@ interface PoolAndStakes {
   userStakes: AddId<StakeData>[];
   deposited: bigint;
   claimable: bigint;
+  totalReward: bigint;
   apy: { min: number; max: number } | null;
 }
 
@@ -121,22 +123,6 @@ export function usePools() {
 
   const error = rawPoolsData.error || rawStakeData.error || lockDurations.error || precision.error;
 
-  console.log(rawStakeData.data, rawStakeData.error, rawStakeData.isLoading);
-
-  const data = isSuccess
-    ? mapPoolAndStakes(
-        rawPoolsData.data,
-        lockDurations.data,
-        rawStakeData.data || [], // loading stakes is deferred until the user is logged in
-        precision.data,
-        timestamp,
-        rates.data?.mor || 0,
-        rates.data?.lmr || 0
-      )
-    : undefined;
-
-  // const poolsData = isSuccess ? {}
-
   return {
     totalPools,
     poolsData: isSuccess
@@ -176,6 +162,13 @@ function mapPoolAndStakes(
 
   for (let i = 0; i < Number(rawPoolData.length); i++) {
     const pool = mapPoolData(rawPoolData[i])!;
+
+    if (pool.endTime < timestamp && pool.totalShares === 0n) {
+      // Skip pools that have ended and all rewards have been claimed
+      // This also filters out pools that were done by mistake
+      continue;
+    }
+
     const userStakes = rawStakeData?.[i]?.map((stake, j) => ({ id: j, ...stake })) || [];
     const bestMultiplierScaled = rawLockDurations[i].reduce<bigint>(
       (acc, cur) => (cur.multiplierScaled > acc ? cur.multiplierScaled : acc),
@@ -219,6 +212,8 @@ function mapPoolAndStakes(
         (acc, stake) => acc + getReward(stake, pool, timestamp, precision),
         0n
       ),
+      totalReward:
+        (max(pool.endTime - pool.startTime, 0n) * pool.rewardPerSecondScaled) / precision,
       apy: apyData,
     });
   }
