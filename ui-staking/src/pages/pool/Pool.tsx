@@ -27,6 +27,7 @@ import { getReadContractURL } from "../../helpers/indexer.ts";
 import { Arbiscan } from "../../icons/Arbiscan.tsx";
 import { apy } from "../../helpers/apy.ts";
 import { useRates } from "../../hooks/useRates.ts";
+import { max } from "../../lib/bigint.ts";
 
 const apyString =
   "The calculated Annual Percentage Yield (APY) is an estimate based " +
@@ -80,12 +81,12 @@ export const Pool = () => {
               {poolError && <p className="error">Error: {poolError.message}</p>}
             </div>
           )}
-
           {poolData && precision.isSuccess && (
             <div className="pool">
               <section className="section pool-stats">
                 <h2 className="section-heading">
                   Pool {poolId} Stats {poolData.isPrestaking && "- PRESTAKING"}
+                  {poolData.isFinished && "- FINISHED"}
                 </h2>
                 <Separator />
 
@@ -109,7 +110,9 @@ export const Pool = () => {
 
                   <dt>Duration</dt>
                   <dd>
-                    {formatDuration(poolData.endTime - poolData.startTime, { verbose: true })}
+                    {formatDuration(max(poolData.endTime - poolData.startTime, 0n), {
+                      verbose: true,
+                    })}
                   </dd>
 
                   <dt>Lockup periods</dt>

@@ -47,7 +47,8 @@ export function mapPoolDataAndDerive(
   } = poolDataParsed;
 
   const poolDuration = endTime - startTime;
-  const isPrestaking = timestamp < startTime;
+  const isFinished = timestamp > endTime;
+  const isPrestaking = timestamp < startTime && !isFinished;
   const poolElapsedDays = poolData ? Math.floor(Number(timestamp - startTime) / 86400) : 0;
   const poolTotalDays = poolData ? Math.floor(Number(poolDuration) / 86400) : 0;
   const poolRemainingSeconds = poolData ? Number(endTime - timestamp) : 0;
@@ -81,5 +82,6 @@ export function mapPoolDataAndDerive(
     lockedRewards,
     unlockedRewards,
     isPrestaking,
+    isFinished,
   };
 }

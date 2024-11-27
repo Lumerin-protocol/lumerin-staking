@@ -9,6 +9,7 @@ import { Chevron } from "../../icons/Chevron.tsx";
 import { LumerinCircle } from "../../icons/LumerinCircle.tsx";
 import { formatDuration } from "../../lib/date.ts";
 import "./Pools.css";
+import { max } from "../../lib/bigint.ts";
 
 export const Pools = () => {
   const { poolsData, timestamp } = usePools();
@@ -72,13 +73,13 @@ export const Pools = () => {
                     <dd>
                       <BalanceLMR value={pool.pool.totalStaked} />
                     </dd>
+                    <dt>Total reward</dt>
+                    <dd>
+                      <BalanceMOR value={pool.totalReward} />
+                    </dd>
                     <dt>You've deposited</dt>
                     <dd>
                       <BalanceLMR value={pool.deposited} />
-                    </dd>
-                    <dt>You've earned</dt>
-                    <dd>
-                      <BalanceMOR value={pool.claimable} />
                     </dd>
                     {pool.pool.startTime > timestamp && (
                       <>
