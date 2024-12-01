@@ -25,7 +25,7 @@ export const Landing = () => {
     }
   }, [event, navigate]);
 
-  const stats = useLanding();
+  const { activePoolsCount, balanceAndPoolCount } = useLanding();
 
   return (
     <>
@@ -58,23 +58,28 @@ export const Landing = () => {
           )}
         </div>
         <div className="cta-stats">
-          {stats.isLoading && <Spinner className="spinner-center" />}
-          {stats.isError && <p>Error loading stats data</p>}
-          {stats.isSuccess && (
+          {/* TODO: move combining loading and error states to a hook */}
+          {(balanceAndPoolCount.isLoading || activePoolsCount.isLoading) && (
+            <Spinner className="spinner-center" />
+          )}
+          {(balanceAndPoolCount.isError || activePoolsCount.isError) && (
+            <p>Error loading stats data</p>
+          )}
+          {balanceAndPoolCount.isSuccess && activePoolsCount.isSuccess && (
             <>
               <div className="cta-stat">
-                <p>{String(stats.data.totalPools)}</p>
+                <p>{String(activePoolsCount.data)}</p>
                 <h3>Total Pools</h3>
               </div>
               <div className="cta-stat">
                 <p>
-                  <BalanceMOR value={stats.data.availableRewardsMOR} />
+                  <BalanceMOR value={balanceAndPoolCount.data.availableRewardsMOR} />
                 </p>
                 <h3>Available Rewards</h3>
               </div>
               <div className="cta-stat">
                 <p>
-                  <BalanceLMR value={stats.data.tvlLMR} />
+                  <BalanceLMR value={balanceAndPoolCount.data.tvlLMR} />
                 </p>
                 <h3>Total Value Locked</h3>
               </div>

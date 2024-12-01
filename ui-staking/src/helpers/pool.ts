@@ -85,3 +85,17 @@ export function mapPoolDataAndDerive(
     isFinished,
   };
 }
+
+export function isPoolActive(pool: ReturnType<typeof mapPoolData>, timestamp: bigint) {
+  if (!pool) {
+    return false;
+  }
+
+  if (pool.endTime < timestamp && pool.totalShares === 0n) {
+    // Skip pools that have ended and all rewards have been claimed
+    // This also filters out pools that were done by mistake
+    return false;
+  }
+
+  return true;
+}
