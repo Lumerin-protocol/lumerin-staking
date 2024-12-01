@@ -1,6 +1,6 @@
 import { useAccount, useReadContract, useReadContracts } from "wagmi";
 import { stakingMasterChefAbi } from "../../blockchain/abi.ts";
-import { mapPoolData, PoolDataRaw } from "../../helpers/pool.ts";
+import { isPoolActive, mapPoolData, PoolDataRaw } from "../../helpers/pool.ts";
 import { getReward } from "../../helpers/reward.ts";
 import { useBlockchainTime } from "../../hooks/useBlockchainTime.ts";
 import { apy } from "../../helpers/apy.ts";
@@ -8,6 +8,7 @@ import { useRates } from "../../hooks/useRates.ts";
 import { decimalsLMR } from "../../lib/units.ts";
 import { ReadContractErrorType } from "viem";
 import { max } from "../../lib/bigint.ts";
+import { createArray } from "../../lib/array.ts";
 
 interface PoolData {
   rewardPerSecondScaled: bigint;
@@ -145,10 +146,6 @@ export function usePools() {
   };
 }
 
-function createArray<T>(length: number, cb: (i: number) => T): T[] {
-  return Array.from({ length }, (_, i) => cb(i));
-}
-
 function mapPoolAndStakes(
   rawPoolData: PoolDataRaw[],
   rawLockDurations: (readonly LockDuration[])[],
@@ -163,9 +160,7 @@ function mapPoolAndStakes(
   for (let i = 0; i < Number(rawPoolData.length); i++) {
     const pool = mapPoolData(rawPoolData[i])!;
 
-    if (pool.endTime < timestamp && pool.totalShares === 0n) {
-      // Skip pools that have ended and all rewards have been claimed
-      // This also filters out pools that were done by mistake
+    if (!isPoolActive(pool, timestamp)) {
       continue;
     }
 
